@@ -7,6 +7,7 @@
 % h = histogram percents
 % bins = lower bin edges
 function [h,bins] = histogram(I, n, min, max)
+I = I(:);
 
 range = max - min;
 drdb = range / double(n); % dr/db - change in range per bin
@@ -19,11 +20,11 @@ for( i=1:n )
 	%       ie - say the input was a probability image.
 	low = min + (i-1)*drdb; 
 	high = min + i*drdb;
-	h(i) = sum( (I(:)>=low) .* (I(:)<high) );
+	h(i) = sum( (I>=low) .* (I<high) );
   bins(i) = low;
 end
 
-h(n) += sum( (I(:)>=(n*drdb)) .* (I(:)<=max) ); % include anything we may have missed in the last bin.
+h(n) += sum( (I>=(n*drdb)) .* (I<=max) ); % include anything we may have missed in the last bin.
 
 h = h ./ sum(h); % "relative frequency"  
 
