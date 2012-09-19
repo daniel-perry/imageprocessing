@@ -1,4 +1,8 @@
 % Fit a GMM to the data using Expectation-Maximization
+% NOTE: I wrote this is octave, and when I ran it in 
+% matlab, I apparently don't have the statistics toolbox,
+% so you may want to run this part in octave... if it
+% doesn't work in matlab (as I couldn't test it in matlab).
 
 % Seg - labeled segmentation over the image
 % Thold - list of thresholds dividing each label group (gaussian)
@@ -42,7 +46,7 @@ while( iters<max_iters )
 	xmat = ones(k,1) * x; % [x; x; ... x]
 	membership = mixmat .* normpdf( xmat, meanmat, varmat );
 	% normalize:
-	normalizer = sum(membership,2) % k by 1
+	normalizer = sum(membership,2); % k by 1
 	normalizer = normalizer * ones(1,n); % k by n
 	membership = membership ./ normalizer;
 
@@ -60,9 +64,10 @@ while( iters<max_iters )
 	% check convergence
 	%====================
 	mnorm = norm(premeans-means);
-	vnorm = norm(prevariances-variances)
-	mixnorm = norm(premix-mix)
-	if( mnorm < eps && vnorm < eps && mixnorm < eps )
+	vnorm = norm(prevariances-variances);
+	mixnorm = norm(premix-mix);
+  epsilon = 10^(-2);
+	if( mnorm < epsilon && vnorm < epsilon && mixnorm < epsilon )
 		break;
   end
 	% save current params for next iteration...
