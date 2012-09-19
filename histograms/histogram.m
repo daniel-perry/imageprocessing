@@ -14,7 +14,7 @@ drdb = range / double(n); % dr/db - change in range per bin
 
 h = zeros(n,1);
 bins = zeros(n,1);
-for( i=1:n )
+for i=1:n
 	% note: while the instructions say "within integer round off" I'm leaving
 	%       this as float bin edges, to handle the potential float input
 	%       ie - say the input was a probability image.
@@ -24,7 +24,7 @@ for( i=1:n )
   bins(i) = low;
 end
 
-h(n) += sum( (I>=(n*drdb)) .* (I<=max) ); % include anything we may have missed in the last bin.
+h(n) = h(n) + sum( (I>=(n*drdb)) .* (I<=max) ); % include anything we may have missed in the last bin.
 
 h = h ./ sum(h); % "relative frequency"  
 

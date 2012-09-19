@@ -9,16 +9,16 @@ function [O] = histoeq(I, n, min, max)
 [h,bins] = histogram(I, n, min, max);
 
 O = zeros(size(I));
-cdf = 0;
+imcdf = 0;
 for (i=1:n-1)
 	index = ((I>=bins(i)) .* (I<bins(i+1))) == 1;
-	cdf += h(i);
-	O(index) = max*cdf;
+	imcdf = imcdf + h(i);
+	O(index) = max*imcdf;
 end
 % handle the last bin:
 index = ((I>=bins(n)) .* (I<=max)) == 1;
-cdf += h(n);
-O(index) = max*cdf;
+imcdf = imcdf + h(n);
+O(index) = max*imcdf;
 
 O = uint8(O); % for imshow...
 

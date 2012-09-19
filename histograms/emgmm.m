@@ -5,7 +5,7 @@
 % I - input image
 % k - number of gaussians
 % max_iters - max # iterations
-function [Seg,Thold] = emgmm( I , k , max_iters)
+function [Means,Variances,Mix] = emgmm( I , k , max_iters)
 
 x = double(I(:)');
 n = size(x,2);
@@ -44,7 +44,7 @@ while( iters<max_iters )
 	% normalize:
 	normalizer = sum(membership,2) % k by 1
 	normalizer = normalizer * ones(1,n); % k by n
-	membership ./= normalizer;
+	membership = membership ./ normalizer;
 
 
 	%=======================
@@ -70,14 +70,18 @@ while( iters<max_iters )
 	prevariances = variances;
 	premix = mix;
 
-  iters+=1
+  iters = iters + 1;
 end
 
-sprintf("iters=%d",iters);
+sprintf('iters=%d',iters);
+
+Means = means;
+Variances = variances;
+Mix = mix;
 
 % estimate intersection of gaussians:
-middle = (means(1)+means(2))/2 ;
-
-Thold = middle;
-Seg = I > Thold;
-
+%middle = (means(1)+means(2))/2 ;
+%
+%Thold = middle;
+%Seg = I > Thold;
+%
