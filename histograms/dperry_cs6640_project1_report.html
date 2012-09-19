@@ -1,0 +1,66 @@
+<html>
+<head>
+<title>CS6640 Project 1 - Daniel Perry</title>
+</head>
+<!-- libs -->
+<script type="text/javascript" src="LaTeXMathML.js"></script>
+
+<!-- css -->
+<!--
+<link rel="stylesheet" type="text/css" href="style.css"></link>
+-->
+
+<body>
+<div id="section0">
+<ul>
+<li>Code is written in matlab</li>
+<li>I've included a file <a href="main.m">main.m</a> that creates all the graphs and derived images shown below.</li>
+</ul>
+</div>
+<div id="section1">
+<h2>Histograms</h2>
+<div id="section1_code">
+<h3>code:</h3>
+<ul>
+<li><a href="histogram.m">histogram.m</a> - defines histogram($I,n,min,max$) function which calculates the histogram of $I$ in $n$ bins of values between $min$ and $max$.</li>
+</ul>
+</div>
+<h3>examples:</h3>
+<table>
+<tr><td><img src="images/crowd.png"></td><td><img src="figures/crowd_hist.png"></td></tr>
+<tr><td colspan="2">
+This example shows histogram is take from the “crowd.tif” image included in the assignment.  The histogram shows a high concentration of lower-intensity pixels.  This makes sense when you look at the image, as it is a very dark image, with a lot of low-intensity pixels.
+</td></tr>
+<tr><td><img src="images/checker1.png"></td><td><img src="figures/checker1_hist.png"></td></tr>
+<tr><td colspan="2">
+This example shows histogram is take from the “checker1.gif” image included in the assignment.  The histogram shows two large concentrations of pixel intensitys, each with a guassian-like distribution.  Again, this makes sense looking at the picture, as the image appears to contain two main intensity values, with each intermixed with some type of noise. 
+</td></tr>
+<tr><td><img src="images/napali.png"></td><td><img src="figures/napali_hist.png"></td></tr>
+<tr><td colspan="2">
+This example is my own photograph.  
+The histogram shows a pretty large range of intensity distributions, with two dominating peaks - one at the highest intensity, around 250, and the other at around 50 - a darker grey.  
+These make a lot of sense looking at the photograph, as there is a large collection of white clouds in the sky - contributing to the large number of intensities around 250.
+The other peak around 50 is probabyl due to the grey intensities of the mountains, which make up a large part of the photograph.
+</td></tr>
+<tr><td><img src="images/santiago.png"></td><td><img src="figures/santiago_hist.png"></td></tr>
+<tr><td colspan="2">
+This example is also one of my own photographs.
+This histogram also shows a wide distribution of values.
+It's a little more difficult to draw exact relationships between picture elements and peaks in the histogram, but it is easy to see that the majority of the intensities exist in the mid-range of intensity values - and correspondingly most of the image is in the mid-range of intensities - ie there aren't many very white or very black areas.
+Overall the histogram does make sense.
+</td></tr>
+</table>
+</div>
+<div id="section2">
+<h2>Histogram Equalization</h2>
+<h3>code:</h3>
+<div id="section2_code">
+<ul>
+<li><a href="histoeq.m">histoeq.m</a></li>
+<li><a href="histoeq2.m">histoeq.m</a></li>
+</ul>
+</div>
+<h3>examples:</h3>
+</div>
+</body>
+</html>
