@@ -229,7 +229,30 @@ checker1_light_std = std(checker1_light(:))
 %  20.0033
 
 % checker1 em-gmm:
-[ch1_means,ch1_var,ch1_mix] = emgmm( checker1, 2, 100)
+%[ch1_means,ch1_var,ch1_mix] = emgmm( checker1, 2, 100)
+
+checker1_h = histogram(checker1, max(checker1(:))+1, 0, max(checker1(:)) );
+xaxis = double(0:max(checker1(:)));
+means = checker1_dark_mean*ones(size(xaxis));
+sds = checker1_dark_std*ones(size(xaxis));
+checker1_dark_gauss = normalpdf( xaxis, means, sds );
+
+means = checker1_light_mean*ones(size(xaxis));
+sds = checker1_light_std*ones(size(xaxis));
+checker1_light_gauss = normalpdf( xaxis, means, sds );
+
+bar(checker1_h);
+hold;
+title('histogram of checker1 image with gaussian model overlaid');
+xlabel('intensity');
+ylabel('frequency');
+p1 = plot(xaxis,checker1_dark_gauss);
+set(p1,'Color','red','LineWidth',2);
+p2 = plot(xaxis,checker1_light_gauss);
+set(p2,'Color','green','LineWidth',2);
+hold;
+input('press any key to continue');
+
 
 
 %checker2 simple model:
@@ -248,6 +271,28 @@ checker2_dark_std = std(checker2_dark(:))
 %checker2_dark_std =
 %   19.4231
 
+checker2_h = histogram(checker2, max(checker2(:))+1, 0, max(checker2(:)) );
+xaxis = double(0:max(checker2(:)));
+means = checker2_dark_mean*ones(size(xaxis));
+sds = checker2_dark_std*ones(size(xaxis));
+checker2_dark_gauss = normalpdf( xaxis, means, sds );
+
+means = checker2_light_mean*ones(size(xaxis));
+sds = checker2_light_std*ones(size(xaxis));
+checker2_light_gauss = normalpdf( xaxis, means, sds );
+
+bar(checker2_h);
+hold;
+title('histogram of checker2 image with guassian model overlaid');
+xlabel('intensity');
+ylabel('frequency');
+p1 = plot(xaxis,checker2_dark_gauss);
+set(p1,'Color','red','LineWidth',2);
+p2 = plot(xaxis,checker2_light_gauss);
+set(p2,'Color','green','LineWidth',2);
+hold;
+input('press any key to continue');
+
 
 %ctscan simple model:
 ctscan_bone = double(imread('images/ct_bone.png'));
@@ -264,4 +309,28 @@ ctscan_tissue_std = std(ctscan_tissue(:))
 %  118.1591
 %ctscan_tissue_std =
 %   12.3770
+
+ctscan_h = histogram(ctscan, max(ctscan(:))+1, 0, max(ctscan(:)) );
+xaxis = double(0:max(ctscan(:)));
+means = ctscan_tissue_mean*ones(size(xaxis));
+sds = ctscan_tissue_std*ones(size(xaxis));
+ctscan_tissue_gauss = normalpdf( xaxis, means, sds );
+
+means = ctscan_bone_mean*ones(size(xaxis));
+sds = ctscan_bone_std*ones(size(xaxis));
+ctscan_bone_gauss = normalpdf( xaxis, means, sds );
+
+bar(ctscan_h);
+hold;
+title('histogram of ctscan image with guassian model overlaid');
+xlabel('intensity');
+ylabel('frequency');
+p1 = plot(xaxis,ctscan_tissue_gauss);
+set(p1,'Color','red','LineWidth',2);
+p2 = plot(xaxis,ctscan_bone_gauss);
+set(p2,'Color','green','LineWidth',2);
+hold;
+input('press any key to continue');
+
+
 

@@ -13,14 +13,14 @@ function [Means,Variances,Mix] = emgmm( I , k , max_iters)
 
 x = double(I(:)');
 n = size(x,2);
-size_of_x = size(x)
 
 % initial mean:
-means=unifrnd(min(x),max(x),[k,1]);
-means
+%means=unifrnd(min(x),max(x),[k,1]);
+means=uniformrnd(min(x),max(x),[k,1]);
 
 % initial variance
-variances=unifrnd(1,5,[k,1]); 
+%variances=unifrnd(1,5,[k,1]); 
+variances=uniformrnd(1,5,[k,1]); 
 
 % initial (even) mix
 mix=ones(k,1);  
@@ -44,17 +44,19 @@ while( iters<max_iters )
 	meanmat = means * ones(1,n); % [means means ... means]
 	varmat = variances * ones(1,n); % [variances variances .. variances]
 	xmat = ones(k,1) * x; % [x; x; ... x]
-	membership = mixmat .* normpdf( xmat, meanmat, varmat );
+	%membership = mixmat .* normpdf( xmat, meanmat, varmat );
+	membership = mixmat .* normalpdf( xmat, meanmat, varmat );
 	% normalize:
-	normalizer = sum(membership,2); % k by 1
-	normalizer = normalizer * ones(1,n); % k by n
-	membership = membership ./ normalizer;
+	mem_normalizer = sum(membership,1); % n by 1
+	mem_normalizer = ones(k,1) * mem_normalizer ; %* ones(1,n); % k by n
+	membership = membership ./ mem_normalizer;
+  membership( mem_normalizer <= eps ) = 0; % hack to avoi NaNs
 
 
 	%=======================
 	% M-step (parameters):
 	%======================
-	normalizer = sum(membership,2) % total responsibility over all pts from each gaussian.
+	normalizer = sum(membership,2); % total responsibility over all pts from each gaussian.
 	means = sum((ones(k,1)*x) .* membership,2) ./ normalizer;
 	dif = (ones(k,1)*x) - (means*ones(1,n));
 	variances = sum(dif .* dif .* membership, 2) ./ normalizer;
@@ -66,7 +68,7 @@ while( iters<max_iters )
 	mnorm = norm(premeans-means);
 	vnorm = norm(prevariances-variances);
 	mixnorm = norm(premix-mix);
-  epsilon = 10^(-2);
+  epsilon = 10^(-3);
 	if( mnorm < epsilon && vnorm < epsilon && mixnorm < epsilon )
 		break;
   end
@@ -78,7 +80,7 @@ while( iters<max_iters )
   iters = iters + 1;
 end
 
-sprintf('iters=%d',iters);
+sprintf('iters=%d',iters)
 
 Means = means;
 Variances = variances;
