@@ -9,17 +9,23 @@
 <!--
 <link rel="stylesheet" type="text/css" href="style.css"></link>
 -->
+<style>
+img {width:500px;}
+#image {width:300px;}
+#section {width: 1050px;}
+table {max-width:810px;}
+</style>
 
 <body>
-<div id="section0">
+<div id="section">
 <ul>
 <li>Code is written in matlab</li>
 <li>I've included a file <a href="main.m">main.m</a> that creates all the graphs and derived images shown below.</li>
 </ul>
 </div>
-<div id="section1">
+<div id="section">
 <h2>Histograms</h2>
-<div id="section1_code">
+<div id="section_code">
 <h3>code:</h3>
 <ul>
 <li><a href="histogram.m">histogram.m</a> - defines histogram($I,n,min,max$) function which calculates the histogram of $I$ in $n$ bins of values between $min$ and $max$.</li>
@@ -27,22 +33,22 @@
 </div>
 <h3>examples:</h3>
 <table>
-<tr><td><img src="images/crowd.png"></td><td><img src="figures/crowd_hist.png"></td></tr>
+<tr><td><img id="image" src="images/crowd.png"></td><td><img src="figures/crowd_hist.png"></td></tr>
 <tr><td colspan="2">
-This example shows histogram is take from the “crowd.tif” image included in the assignment.  The histogram shows a high concentration of lower-intensity pixels.  This makes sense when you look at the image, as it is a very dark image, with a lot of low-intensity pixels.
+This example shows histogram is take from the "crowd.tif" image included in the assignment.  The histogram shows a high concentration of lower-intensity pixels.  This makes sense when you look at the image, as it is a very dark image, with a lot of low-intensity pixels.
 </td></tr>
-<tr><td><img src="images/checker1.png"></td><td><img src="figures/checker1_hist.png"></td></tr>
+<tr><td><img id="image" src="images/checker1.png"></td><td><img src="figures/checker1_hist.png"></td></tr>
 <tr><td colspan="2">
-This example shows histogram is take from the “checker1.gif” image included in the assignment.  The histogram shows two large concentrations of pixel intensitys, each with a guassian-like distribution.  Again, this makes sense looking at the picture, as the image appears to contain two main intensity values, with each intermixed with some type of noise. 
+This example shows histogram is take from the "checker1.gif" image included in the assignment.  The histogram shows two large concentrations of pixel intensitys, each with a guassian-like distribution.  Again, this makes sense looking at the picture, as the image appears to contain two main intensity values, with each intermixed with some type of noise. 
 </td></tr>
-<tr><td><img src="images/napali.png"></td><td><img src="figures/napali_hist.png"></td></tr>
+<tr><td><img id="image" src="images/napali.png"></td><td><img src="figures/napali_hist.png"></td></tr>
 <tr><td colspan="2">
 This example is my own photograph.  
 The histogram shows a pretty large range of intensity distributions, with two dominating peaks - one at the highest intensity, around 250, and the other at around 50 - a darker grey.  
 These make a lot of sense looking at the photograph, as there is a large collection of white clouds in the sky - contributing to the large number of intensities around 250.
 The other peak around 50 is probabyl due to the grey intensities of the mountains, which make up a large part of the photograph.
 </td></tr>
-<tr><td><img src="images/santiago.png"></td><td><img src="figures/santiago_hist.png"></td></tr>
+<tr><td><img id="image" src="images/santiago.png"></td><td><img src="figures/santiago_hist.png"></td></tr>
 <tr><td colspan="2">
 This example is also one of my own photographs.
 This histogram also shows a wide distribution of values.
@@ -51,16 +57,97 @@ Overall the histogram does make sense.
 </td></tr>
 </table>
 </div>
-<div id="section2">
+<div id="section">
 <h2>Histogram Equalization</h2>
 <h3>code:</h3>
-<div id="section2_code">
+<div id="section_code">
 <ul>
 <li><a href="histoeq.m">histoeq.m</a></li>
 <li><a href="histoeq2.m">histoeq.m</a></li>
 </ul>
 </div>
 <h3>examples:</h3>
+<table>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"crowd"</td></tr>
+<tr><td><img id="image" src="images/crowd.png"></td><td><img src="figures/crowd_hist.png"></td></tr>
+<tr><td><img id="image" src="images/crowd_eq.png"></td><td><img src="figures/crowd_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+<!-- discuss histogram appearance after equalization and effectiveness (or not) on the image.. -->
+<p>
+In this image, the histogram of the original image shows a larg clustering of images on the far left - which corresponds to the overall low intensity of the image.
+After histogram equalization, the histogram density appears to have spread out over the intensity spectrum.  
+It also seems to have space out the different intensity values represented: in the original histogram the bars are close enough to appear contiguous, while in the equalized histogram, the bars are not only more evenly distributed, but also more spaced.
+</p>
+<p>
+The effect on the image is very obvious - with a more diversified spread of intensities, the image appears much more bright as compared to the original.  The equalizatino hasn't just brightened pixels, it has give a more even spread of intensities, so that the image has more brightness and contrast.
+</p>
+</td>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"university"</td></tr>
+</tr>
+<tr><td><img id="image" src="images/university.png"></td><td><img src="figures/university_hist.png"></td></tr>
+<tr><td><img id="image" src="images/university_eq.png"></td><td><img src="figures/university_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+<p>
+This image is similar to the first, in that the original histogram has a dense clustering of intensities on the low intensity end.  Again after equalization these intensities spread out.  It's also interesting to note that there is actually a more dense clustering of pixels on the opposite (high intensity) end of the intensity spectrum than, and a much sparser clustering of intensity on low intensity end.
+</p>
+<p>
+The image after equalization again looks brighter as compared with the original. With the better spread of intensity values, one can see more details that were previously blended in the low intensity lump.  One detail that is hard to see without zooming in on the images, is that while teh equalized image looks good overall, the image appears more grainy.  However this detail could probably be taken care of with some amount of gaussian smoothing - as evidenced by it not being noticeable except when zoomed in.
+</p>
+</td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"chang"</td></tr>
+<tr><td><img id="image" src="images/chang.png"></td><td><img src="figures/chang_hist.png"></td></tr>
+<tr><td><img id="image" src="images/chang_eq.png"></td><td><img src="figures/chang_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+<p>
+This image was also original quite dark, and consequently the original histogram is very clumped at the low-intensity end.  After equalization the histogram mass has been spread out across the intensity spectrum.  Again, there appears to be some clumping of the intensities on the high intensity end.
+</p>
+<p>
+The equalized image has the expected result, it appears more clear and details are more discernible than the original.
+The better spread of intensities allows for more contrast and brightness variety than in the original image.
+</p>
+</td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"portal"</td></tr>
+<tr><td><img id="image" src="images/portal.png"></td><td><img src="figures/portal_hist.png"></td></tr>
+<tr><td><img id="image" src="images/portal_eq.png"></td><td><img src="figures/portal_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+</td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"napali"</td></tr>
+<tr><td><img id="image" src="images/napali.png"></td><td><img src="figures/napali_hist.png"></td></tr>
+<tr><td><img id="image" src="images/napali_eq.png"></td><td><img src="figures/napali_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+</td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"arch"</td></tr>
+<tr><td><img id="image" src="images/arch.png"></td><td><img src="figures/arch_hist.png"></td></tr>
+<tr><td><img id="image" src="images/arch_eq.png"></td><td><img src="figures/arch_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+</td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"santiago"</td></tr>
+<tr><td><img id="image" src="images/santiago.png"></td><td><img src="figures/santiago_hist.png"></td></tr>
+<tr><td><img id="image" src="images/santiago_eq.png"></td><td><img src="figures/santiago_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+</td>
+</tr>
+
+</table>
 </div>
 </body>
 </html>
