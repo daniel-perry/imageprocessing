@@ -18,6 +18,8 @@ table {max-width:810px;}
 
 <body>
 <div id="section">
+<h1>CS6640 Project 1</h1>
+<h2>Daniel Perry</h2>
 <ul>
 <li>Code is written in matlab</li>
 <li>I've included a file <a href="main.m">main.m</a> that creates all the graphs and derived images shown below.</li>
@@ -28,7 +30,7 @@ table {max-width:810px;}
 <div id="section_code">
 <h3>code:</h3>
 <ul>
-<li><a href="histogram.m">histogram.m</a> - defines histogram($I,n,min,max$) function which calculates the histogram of $I$ in $n$ bins of values between $min$ and $max$.</li>
+<li><a href="histogram.m">histogram.m</a> - defines histogram(I,n,min,max) function which calculates the histogram <br>of I in n bins of values between min and max.</li>
 </ul>
 </div>
 <h3>examples:</h3>
@@ -63,7 +65,6 @@ Overall the histogram does make sense.
 <div id="section_code">
 <ul>
 <li><a href="histoeq.m">histoeq.m</a></li>
-<li><a href="histoeq2.m">histoeq.m</a></li>
 </ul>
 </div>
 <h3>examples:</h3>
@@ -120,6 +121,13 @@ The better spread of intensities allows for more contrast and brightness variety
 <tr><td><img id="image" src="images/portal_eq.png"></td><td><img src="figures/portal_eq_hist.png"></td></tr>
 <tr>
 <td colspan="2">
+<p>
+This image didn't have a huge change in the histogram.  The original histogram was already fairly spread out, the equalized histogram has a little more distance between some of the bins.
+</p>
+<p>
+The image also did not change a lot, but did change some.  Specifically, some of the detail in the middle of the lighter area is now visible, and you can almost make out some sor tof bone structure.
+The equalization was not quite as effective for this image, because the histgoram was already fairly well distributed.
+</p>
 </td>
 </tr>
 <tr><td colspan="2"><hr></td></tr>
@@ -128,6 +136,13 @@ The better spread of intensities allows for more contrast and brightness variety
 <tr><td><img id="image" src="images/napali_eq.png"></td><td><img src="figures/napali_eq_hist.png"></td></tr>
 <tr>
 <td colspan="2">
+<p>
+This is an interesting picture to see how histogram equalization works, because the image includes a large group of really bright pixels (clouds), and a large group of lower/mid-intensity pixels (mountains).  The equalization is able to break up and spread out the intensities a little more.
+</p>
+<p>
+The image has noticeable changes - the darkened moutains appear to have a more lustery surface, although the effect almost looks like snow.  
+While the equalization had some effect, it appears that because of this specific scene the effects are not preferable.. the original image is probably better.  Thist is one of the pictures we will be using the blending histogram equalization approach on below. 
+</p>
 </td>
 </tr>
 <tr><td colspan="2"><hr></td></tr>
@@ -136,6 +151,17 @@ The better spread of intensities allows for more contrast and brightness variety
 <tr><td><img id="image" src="images/arch_eq.png"></td><td><img src="figures/arch_eq_hist.png"></td></tr>
 <tr>
 <td colspan="2">
+<p>
+Again, this image contains a large group high-intensity pixels (wave crests, and reflection off the water) and a large group of mid to low-intensity pixels (rock making up the arch).  
+The histogram again spreads out the histogram by incorporating more dark intensity pixels
+It also seems to have groups and spaced the pixels - resulting in a sort of smoothing over of a small bulge in the middle of the histogram.
+</p>
+<p>
+The effect of the equalization on the image is not very desirable.  
+While the details in the rock crackers are more observable, this isn't very good in a visual sense.
+The waves appear more washed out as well.
+The equalization didn't have a very good effect because the pixels were already pretty well spaced, and probably also due to the pixels having two large groups - bright and mid-range... making it difficult to evenly spread them.
+</p>
 </td>
 </tr>
 <tr><td colspan="2"><hr></td></tr>
@@ -144,8 +170,159 @@ The better spread of intensities allows for more contrast and brightness variety
 <tr><td><img id="image" src="images/santiago_eq.png"></td><td><img src="figures/santiago_eq_hist.png"></td></tr>
 <tr>
 <td colspan="2">
+<p>
+While this histogram has a good range of values, there is also some clumping to the center of the histogram.
+The majority of the mass of the histogram is in the center.
+Equalization spreads that mass out more evenly across the intensity spectrum, giving a more balanced look to the histogram.
+</p>
+<p>
+The effect of this on the image actually very good.  While the original seems a little over-exposed, giving an almost hazy feel to the city-scape, the equalized image looks more sharp and crisp.
+The buildings in the image also appear more bright, and the vegetation up close looks more dark.
+In the original both were a little more mid-intensity which made the image dull.
+</p>
 </td>
 </tr>
+</table>
+</div>
+<div id="section">
+<h2>Blended histogram equalization</h2>
+<div id="section_code">
+<h3>code:</h3>
+<ul>
+<li><a href="histoeq2.m">histoeq2.m</a></li>
+</ul>
+</div>
+<h3>examples:</h3>
+I decided to use two images in this example that were difficult to look good equalized, in hopes that with some blending the result coudl be improved.
+The "portal" and "napali" images from above are show below with differing blends of histogram equalization.
+<table>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"portal"</td></tr>
+<tr><td><img id="image" src="images/portal.png"></td><td><img src="figures/portal_hist.png"></td></tr>
+<tr><td><img id="image" src="images/portal_alpha_eq3.png"></td><td><img src="figures/portal_alpha_eq3_hist.png"></td></tr>
+<tr><td><img id="image" src="images/portal_alpha_eq1.png"></td><td><img src="figures/portal_alpha_eq1_hist.png"></td></tr>
+<tr><td><img id="image" src="images/portal_alpha_eq2.png"></td><td><img src="figures/portal_alpha_eq2_hist.png"></td></tr>
+<tr><td><img id="image" src="images/portal_eq.png"></td><td><img src="figures/portal_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+<p>
+The above images show (from top) the original portal image, followed by a histogram equalization blended with alpha = 0.2, 0.5, 0.9, and the fully equalized image (alpha = 1.0).
+As the images increase alpha from 0.0 to 1.0, the histogram slowly changes from a more compact histgogram to a slightly more spread out histogram.
+</p>
+<p>
+The images also show a noticeable transition from the original to a fully equalized image.
+In the original it is difficult to see any details, while in the fully equalized image, one can make out some forms of a skeleton.
+By blending with the original we recapture some of the original pixel distrubtion, which softens slightly some of the effects of this image.
+In this situation the softening effect probably isnt' desirable, as the goals is to make out the details of the scan.
+However the next example does show desirable benefit from this technique.
+</p>
+</td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"napali"</td></tr>
+<tr><td><img id="image" src="images/napali.png"></td><td><img src="figures/napali_hist.png"></td></tr>
+<tr><td><img id="image" src="images/napali_alpha_eq3.png"></td><td><img src="figures/napali_alpha_eq3_hist.png"></td></tr>
+<tr><td><img id="image" src="images/napali_alpha_eq1.png"></td><td><img src="figures/napali_alpha_eq1_hist.png"></td></tr>
+<tr><td><img id="image" src="images/napali_alpha_eq2.png"></td><td><img src="figures/napali_alpha_eq2_hist.png"></td></tr>
+<tr><td><img id="image" src="images/napali_eq.png"></td><td><img src="figures/napali_eq_hist.png"></td></tr>
+<tr>
+<td colspan="2">
+<p>
+The ordering of the histograms above provides for a view into the transition of the histogram from the original to a more dispersed, equalized histogram.
+By slowly moving the eye from one to the other you can almost see the sharp peak on the left melt into the rounded hill in the equalized image.
+</p>
+<p>
+The images also display a transition from original to equalized.
+As noted in the equalizaiton discussion above, the equalized version of this image isn't very visually appealing, as the equalization gives the mountains a glazed effect, making it almost look like snowy peaks.
+By blending the equalized histogram with the original, this effect can be softened.
+For example the image associated with alpha = 0.2 appears to have a more contrast in the details of the mountain (more than the original), but doesn't go overboard in highlighting the moutain surfaces - it appears to be a good balance of enhancement and original image.
+</p>
+</td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
+</table>
+</div>
+<div id="section">
+<div id="section_code">
+<h3>code:</h3>
+<ul>
+<li><a href="main.m">main.m</a> - contains code used for segmentation and manual distribution analysis</li>
+<!--
+<li><a href="emgmm.m">emgmm.m</a> - an expectation-maximization approach to distribution analysis.</li>
+-->
+</ul>
+</div>
+<h3>examples:</h3>
+<table>
+<tr><td colspan="2">"checker1"</td></tr>
+<tr><td colspan="2"><img id="image" src="images/checker1.png"></td></tr>
+<tr><td><img id="image" src="images/checker1_manual_th.png"></td><td><img src="figures/checker1_hist.png"></td></tr>
+<tr><td colspan="2">
+Selecting threshold visually:
+<p>
+The histogram of the "checker1" image is shown above.
+Visually inspecting the histogram in matlab (using the data picking tool), I found the intensity of <b>110</b> to be a good separator of the two distributions.
+The results of using that value to threshold the original image is show above.  As can be seen the threshold seems to have worked pretty well.
+</p>
+</td></tr>
+<tr><td><img id="image" src="images/checker1_simplemodel_th.png"></td><td><img src="figures/checker1_hist_simpleguass.png"></td></tr>
+<tr><td colspan="2">
+Selecting threshold with a simple model:
+<p>
+By modeling the distribution of pixels in both the light (<i>mean=140.50, stdev=20.00</i>) and dark (<i>mean=76.33, stdev=20.15</i>) regions we are able to estimate the intersection of the two models: <b>108.42</b>.
+These distributions have been plotted on top of the histogram of the images above right, to give you an idea of how well they match.
+That threshold was then used to segment the image, which is show above left.
+The threshold estimate was made by averaging the means of the two distributions - which works in this case becase the standard deviations are so similar.
+</p>
+</td></tr>
+
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"checker2"</td></tr>
+<tr><td colspan="2"><img id="image" src="images/checker2.png"></td></tr>
+<tr><td><img id="image" src="images/checker2_manual_th.png"></td><td><img src="figures/checker2_hist.png"></td></tr>
+<tr><td colspan="2">
+Selecting threshold visually:
+<p>
+The histogram of the "checker2" image is shown above.
+Visually inspecting the histogram in matlab (using the data picking tool), I found the intensity of <b>103</b> to be a good separator of the two distributions.
+The results of using that value to threshold the original image is show above.  As can be seen the threshold seems to have worked pretty well.
+</p>
+</td></tr>
+<tr><td><img id="image" src="images/checker2_simplemodel_th.png"></td><td><img src="figures/checker2_hist_simpleguass.png"></td></tr>
+<tr><td colspan="2">
+Selecting threshold with a simple model:
+<p>
+By modeling the distribution of pixels in both the light (<i>mean=138.66, stdev=19.69</i>) and dark (<i>mean=74.48, stdev=19.42</i>) regions we are able to estimate the intersection of the two models: <b>106.57</b>.
+These distributions have been plotted on top of the histogram of the images above right, to give you an idea of how well they match.
+That threshold was then used to segment the image, which is show above left.
+The threshold estimate was made by averaging the means of the two distributions - which works in this case becase the standard deviations are so similar.
+</p>
+</td></tr>
+
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2">"ctscan"</td></tr>
+<tr><td colspan="2"><img id="image" src="images/ctscan.png"></td></tr>
+<tr><td><img id="image" src="images/ctscan_manual_th_1.png"><br><img id="image" src="images/ctscan_manual_th_2.png"></td><td><img src="figures/ctscan_hist.png"></td></tr>
+<tr><td colspan="2">
+Selecting threshold visually:
+<p>
+The histogram of the "ctscan" image is shown above.
+Visually inspecting the histogram in matlab (using the data picking tool), I found the intensity of <b>103</b> to be a good separator of the two distributions.
+The results of using that value to threshold the original image is show above.  As can be seen the threshold seems to have worked pretty well.
+</p>
+</td></tr>
+<tr><td><img id="image" src="images/ctscan_simplemodel_bone_th.png"><br><img id="image" src="images/ctscan_simplemodel_tissue_th.png"></td><td><img src="figures/ctscan_hit_simpleguass.png"></td></tr>
+<tr><td colspan="2">
+Selecting threshold with a simple model:
+<p>
+By modeling the distribution of pixels in the bone (<i>mean=253.71, stdev=2.15</i>) and tissue (<i>mean=118.15, stdev=12.37</i>) regions we are able to estimate some meaningful separation of the two models: <b>185.93</b>, and of the tissue model with everything else: <b>59.07</b>.
+These distributions have been plotted on top of the histogram of the images above right, to give you an idea of how well they match.
+Those thresholds were then used to segment the image, which is show above left.
+We didn't explicitly model the non-tissue,non-bone pixels, except to say that they were close to <b>0</b>, which we used when computing the separating threshold betwen the tissue mean and the other pixels.  The separation between the bone mean and tissue mean was computed using the mean of those values.
+While the distrubtions didn't have similar standard deviations, a mean seemed a decent way of calculating  a fair division between the two.
+</p>
+</td></tr>
+
 
 </table>
 </div>
