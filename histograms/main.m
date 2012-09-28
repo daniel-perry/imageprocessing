@@ -153,25 +153,67 @@ input('press any key to continue');
 % couldn't tell the difference?
 portal_alpha_eq1 = histoeq2(portal, max(portal(:))+1, 0, max(portal(:)), .5 );
 imwrite(portal_alpha_eq1, 'images/portal_alpha_eq1.png');
+portal_alpha_eq1_h = histogram(portal_alpha_eq1, max(portal_alpha_eq1(:))+1, 0, max(portal_alpha_eq1(:)) );
+bar(portal_alpha_eq1_h);
+title('histogram of equalized portal image blended at 0.5');
+xlabel('intensity');
+ylabel('frequency');
+input('press any key to continue');
+
 portal_alpha_eq2 = histoeq2(portal, max(portal(:))+1, 0, max(portal(:)), .9 );
 imwrite(portal_alpha_eq2, 'images/portal_alpha_eq2.png');
+portal_alpha_eq2_h = histogram(portal_alpha_eq2, max(portal_alpha_eq2(:))+1, 0, max(portal_alpha_eq2(:)) );
+bar(portal_alpha_eq2_h);
+title('histogram of equalized portal image blended at 0.9');
+xlabel('intensity');
+ylabel('frequency');
+input('press any key to continue');
+
 portal_alpha_eq3 = histoeq2(portal, max(portal(:))+1, 0, max(portal(:)), .2 );
 imwrite(portal_alpha_eq3, 'images/portal_alpha_eq3.png');
+portal_alpha_eq3_h = histogram(portal_alpha_eq3, max(portal_alpha_eq3(:))+1, 0, max(portal_alpha_eq3(:)) );
+bar(portal_alpha_eq3_h);
+title('histogram of equalized portal image blended at 0.2');
+xlabel('intensity');
+ylabel('frequency');
+input('press any key to continue');
+
+
 
 % napali_alpha_eq3 was the best!
 napali_alpha_eq1 = histoeq2(napali, max(napali(:))+1, 0, max(napali(:)), .5 );
 imwrite(napali_alpha_eq1, 'images/napali_alpha_eq1.png');
+napali_alpha_eq1_h = histogram(napali_alpha_eq1, max(napali_alpha_eq1(:))+1, 0, max(napali_alpha_eq1(:)) );
+bar(napali_alpha_eq1_h);
+title('histogram of equalized napali image blended at 0.2');
+xlabel('intensity');
+ylabel('frequency');
+input('press any key to continue');
+
 napali_alpha_eq2 = histoeq2(napali, max(napali(:))+1, 0, max(napali(:)), .9 );
 imwrite(napali_alpha_eq2, 'images/napali_alpha_eq2.png');
+napali_alpha_eq2_h = histogram(napali_alpha_eq2, max(napali_alpha_eq2(:))+1, 0, max(napali_alpha_eq2(:)) );
+bar(napali_alpha_eq2_h);
+title('histogram of equalized napali image blended at 0.2');
+xlabel('intensity');
+ylabel('frequency');
+input('press any key to continue');
+
 napali_alpha_eq3 = histoeq2(napali, max(napali(:))+1, 0, max(napali(:)), .2 );
 imwrite(napali_alpha_eq3, 'images/napali_alpha_eq3.png');
+napali_alpha_eq3_h = histogram(napali_alpha_eq3, max(napali_alpha_eq3(:))+1, 0, max(napali_alpha_eq3(:)) );
+bar(napali_alpha_eq3_h);
+title('histogram of equalized napali image blended at 0.2');
+xlabel('intensity');
+ylabel('frequency');
+input('press any key to continue');
 
-
+%}
 
 %% Segmentation
-
 % histograms:
 
+%{
 checker1_h = histogram(checker1, max(checker1(:))+1, 0, max(checker1(:)) );
 checker2_h = histogram(checker2, max(checker2(:))+1, 0, max(checker2(:)) );
 ctscan_h = histogram(ctscan, 100, 0, max(ctscan(:)) );
@@ -209,8 +251,9 @@ ctscan_manual_th1 = ctscan >= 200;
 imwrite(ctscan_manual_th1, 'images/ctscan_manual_th_1.png');
 ctscan_manual_th2 = (ctscan < 200) .* (ctscan>=50);
 imwrite(ctscan_manual_th2, 'images/ctscan_manual_th_2.png');
-
 %}
+
+%{
 
 %checker1 simple model:
 checker1_dark = double(checker1(138:255,1:118));
@@ -240,6 +283,11 @@ checker1_dark_gauss = normalpdf( xaxis, means, sds );
 means = checker1_light_mean*ones(size(xaxis));
 sds = checker1_light_std*ones(size(xaxis));
 checker1_light_gauss = normalpdf( xaxis, means, sds );
+
+% estimate valley by finding center of means:
+checker1_simplemodel_th_val = (checker1_light_mean+checker1_dark_mean)/2;
+checker1_simplemodel_th = checker1 >= checker1_simplemodel_th_val;
+imwrite(checker1_simplemodel_th, 'images/checker1_simplemodel_th.png');
 
 bar(checker1_h);
 hold;
@@ -281,6 +329,12 @@ means = checker2_light_mean*ones(size(xaxis));
 sds = checker2_light_std*ones(size(xaxis));
 checker2_light_gauss = normalpdf( xaxis, means, sds );
 
+% estimate valley by finding center of means:
+checker2_simplemodel_th_val = (checker2_light_mean+checker2_dark_mean)/2;
+checker2_simplemodel_th = checker2 >= checker2_simplemodel_th_val;
+imwrite(checker2_simplemodel_th, 'images/checker2_simplemodel_th.png');
+
+
 bar(checker2_h);
 hold;
 title('histogram of checker2 image with guassian model overlaid');
@@ -292,6 +346,8 @@ p2 = plot(xaxis,checker2_light_gauss);
 set(p2,'Color','green','LineWidth',2);
 hold;
 input('press any key to continue');
+
+%}
 
 
 %ctscan simple model:
@@ -320,6 +376,16 @@ means = ctscan_bone_mean*ones(size(xaxis));
 sds = ctscan_bone_std*ones(size(xaxis));
 ctscan_bone_gauss = normalpdf( xaxis, means, sds );
 
+% estimate valley by finding center of means:
+ctscan_simplemodel_bone_th_val = (ctscan_bone_mean+ctscan_tissue_mean)/2
+ctscan_simplemodel_bone_th = ctscan >= ctscan_simplemodel_bone_th_val;
+imwrite(ctscan_simplemodel_bone_th, 'images/ctscan_simplemodel_bone_th.png');
+
+ctscan_simplemodel_tissue_th_val = (ctscan_tissue_mean+0)/2
+ctscan_simplemodel_tissue_th = (ctscan >= ctscan_simplemodel_tissue_th_val) .* (ctscan < ctscan_simplemodel_bone_th_val);
+imwrite(ctscan_simplemodel_tissue_th, 'images/ctscan_simplemodel_tissue_th.png');
+
+
 bar(ctscan_h);
 hold;
 title('histogram of ctscan image with guassian model overlaid');
@@ -331,6 +397,7 @@ p2 = plot(xaxis,ctscan_bone_gauss);
 set(p2,'Color','green','LineWidth',2);
 hold;
 input('press any key to continue');
+
 
 
 
