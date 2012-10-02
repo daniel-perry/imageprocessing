@@ -4,7 +4,7 @@
 
 function Out = convolve( In, Mask )
 
-mask_size = size(In);
+mask_size = size(Mask);
 if mask_size(1) == 1 || mask_size(2) == 1 
 	Out = convolve1D(In, Mask);
 else

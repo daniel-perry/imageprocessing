@@ -15,8 +15,8 @@ if mod(max(mask_size),2) == 0
 	return;
 end
 
-Mask = reshape(Mask, [1,max(mask_size)]); % row vector
-Mask = reverse(Mask); %definition of convolution (ie transposing in 1D..)
+Mask = reshape(Mask, [max(mask_size),1]); % col vector
+%Mask = reverse(Mask); %definition of convolution (ie transposing in 1D..)
 mask_size = size(Mask);
 
 border = floor(mask_size(1) / 2);
