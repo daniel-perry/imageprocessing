@@ -5,6 +5,7 @@
 function Out = convolve1D( In, Mask )
 
 mask_size = size(Mask);
+
 % check if it's a 1D mask
 if mask_size(1) != 1 && mask_size(2) != 1
  	sprintf('mask must be 1D! not %d x %d',mask_size(1),mask_size(2))
@@ -15,33 +16,37 @@ if mod(max(mask_size),2) == 0
 	return;
 end
 
-Mask = reshape(Mask, [max(mask_size),1]); % col vector
-%Mask = reverse(Mask); %definition of convolution (ie transposing in 1D..)
-mask_size = size(Mask);
-
-border = floor(mask_size(1) / 2);
+In = double(In);
+Mask = double(Mask);
 
 image_size = size(In);
+border = floor(max(mask_size) / 2);
 
-OutTmp = zeros(image_size(1)-2*border, image_size(2)); % cutting off border on sides
+if mask_size(2) > 1 % row mask vector
 
-for r=1+border:image_size(1)-border
-	for c=1:image_size(2)
-		section = In(r-border:r+border,c);
-		result = section .* Mask;
-		OutTmp(r-border,c) = sum(result(:));
-	end
+  Out = zeros(image_size(1)-2*border, image_size(2)); % cutting off border on sides
+
+  for r=1+border:image_size(1)-border
+  	for c=1:image_size(2)
+  		section = In(r-border:r+border,c); % col vector
+  		%result = section .* Mask;
+  		%Out(r-border,c) = sum(result(:));
+  		Out(r-border,c) = Mask * section; % inner product
+  	end
+  end
+
+else % col mask vector
+
+  Out = zeros(image_size(1), image_size(2)-2*border);
+
+  for r=1:image_size(1)
+  	for c=1+border:image_size(2)-border
+  		section = In(r,c-border:c+border); % row vector
+  		%result = section .* Mask;
+  		%Out(r,c-border) = sum(result(:));
+  		Out(r,c-border) = section * Mask; % inner product
+  	end
+  end
+
 end
 
-Mask = Mask'; % column vector
-image_size = size(OutTmp);
-Out = zeros(image_size(1)-2*border, image_size(2)-2*border);
-for r=1:image_size(1)
-	for c=1+border:image_size(2)-border
-		section = OutTmp(r,c-border:c+border);
-		result = section .* Mask;
-		Out(r,c-border) = sum(result(:));
-	end
-end
-
-Out = uint8(Out);

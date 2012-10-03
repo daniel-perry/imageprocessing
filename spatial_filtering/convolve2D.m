@@ -4,6 +4,8 @@
 
 function Out = convolve2D( In, Mask )
 
+In = double(In);
+Mask = double(Mask);
 mask_size = size(Mask);
 % we want a square, odd-sided mask:
 if mask_size(1) != mask_size(2)
@@ -31,4 +33,3 @@ for r=1+border:image_size(1)-border
 	end
 end
 
-Out = uint8(Out);

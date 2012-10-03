@@ -6,8 +6,10 @@ function Out = convolve( In, Mask )
 
 mask_size = size(Mask);
 if mask_size(1) == 1 || mask_size(2) == 1 
-	Out = convolve1D(In, Mask);
+	OutTmp = convolve1D(In, Mask);
+	Out = convolve1D(OutTmp, Mask');
 else
 	Out = convolve2D(In, Mask);
 end
 
+Out = uint8(Out);
