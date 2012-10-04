@@ -8,7 +8,7 @@ In = double(In);
 Mask = double(Mask);
 mask_size = size(Mask);
 % we want a square, odd-sided mask:
-if mask_size(1) != mask_size(2)
+if mask_size(1) ~= mask_size(2)
 	sprintf('mask must be sqare! not %d x %d',mask_size(1),mask_size(2))
  return;
 end

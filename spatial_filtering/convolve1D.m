@@ -7,7 +7,7 @@ function Out = convolve1D( In, Mask )
 mask_size = size(Mask);
 
 % check if it's a 1D mask
-if mask_size(1) != 1 && mask_size(2) != 1
+if mask_size(1) ~= 1 && mask_size(2) ~= 1
  	sprintf('mask must be 1D! not %d x %d',mask_size(1),mask_size(2))
  	return;
 end

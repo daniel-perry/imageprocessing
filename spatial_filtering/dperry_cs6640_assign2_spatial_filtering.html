@@ -1,0 +1,260 @@
+<html>
+<head>
+<title>CS6640 Project 2 - Spatial Filtering - Daniel Perry</title>
+</head>
+<!-- libs -->
+<script type="text/javascript" src="LaTeXMathML.js"></script>
+
+<!-- css -->
+<!--
+<link rel="stylesheet" type="text/css" href="style.css"></link>
+-->
+<style>
+img {width:500px;}
+#image {width:300px;}
+#section {width: 900px;}
+table {max-width:810px;}
+</style>
+
+<body>
+
+<div id="section">
+<h1>CS6640 Project 2 - Spatial Filtering</h1>
+<h2>Daniel Perry</h2>
+<ul>
+<li>Code is written in matlab</li>
+<li>I've included a file <a href="main.m">main.m</a> that creates all the graphs and derived images shown below.</li>
+</ul>
+</div>
+
+<div id="section">
+<h2>Smoothing</h2>
+<div id="section_code">
+<h3>code:</h3>
+<ul>
+2D Box Filter
+<li><a href="makeBox2D.m">makeBox2D.m</a> - creates a 2D box filter.</li>
+<li><a href="convolve2D.m">convolve2D.m</a> - convolves a 2D filter and an image.</li>
+<li><a href="convolve.m">convolve.m</a> - helper function that calls convolve2d or convolve1d (defined below) depending on arguments.</li>
+1D Box Filter
+<li><a href="makeBox1D.m">makeBox1D.m</a> - creates a 1D box filter.</li>
+<li><a href="convolve1D.m">convolve1D.m</a> - convolves a 1D filter and an image.</li>
+1D Gaussian Filter
+<li><a href="makeGauss1D.m">makeGauss1D.m</a> - creates a 1D Gaussian filter.</li>
+</ul>
+</div>
+<div id="section">
+<b>Code Description</b>
+<p>
+I've written a single convolve() function that takes an image and a mask (the mask is assumed to be normalized).  The function then determines whether the mask is 1D or 2D and then calls the corresponding convolve1D() or convolve2D().  The convolve1D() function determines if the mask is a row or column vector and applies the filter appropriately.
+</p>
+<p>
+Each of the different filters then have their own mask generation function.  There is makeBox2D() - which generates a 2D box filter, makeBox1D() - which generates the 1D box filter, and makeGauss1D() - which generates the 1D Gaussian filter.  These masks can each be used in the convolve function to get the smoothing result.
+</p>
+<p>
+Both of the makeBoxND() functions take a single paramter - the size of the box filter.  The makeGauss1D() function takes asingle parameter Sigma, which controls the smoothing and width of the Gaussian filter.  As directed, the filter width is set to 1+6*Sigma, to give sufficient coverage for the effect. All make functions return a normalized mask that can be used in the convolve function described above.
+</p>
+</div>
+<div id="section">
+<h3>examples:</h3>
+<ul>
+<li>I show the results of all three approaches together below to make comparison easier.</li>
+</ul>
+<table>
+<tr><td><img id="image" src="images/capitol.jpg"><br>Original</td><td><img id="image" src="images/capitol_box3.jpg"><br>2D Box filter, width=3</td></tr>
+<tr><td><img id="image" src="images/capitol_box5.jpg"><br>2D Box Filter, Width =5</td><td><img id="image" src="images/capitol_box5_1d.jpg"><br>2 x 1D Box filters, width=5</td></tr>
+<tr><td><img id="image" src="images/capitol_gauss1_1d.jpg"><br>2 x 1D Guassian Filter, Sigma=1</td><td><img id="image" src="images/capitol_gauss3_1d.jpg"><br>2 x 1D Gaussian Filter, Sigma=3</td></tr>
+<tr><td colspan="2">
+The above examples demonstrate each of the filters described above.  As the images show, the wider the Box or larger the Sigma the greater the smoothing effect.  It's also clear to see that the 2D Box Filter with Width=5 (5x5 Box filter), has the same smoothing effect as 2 1D Box Filters with Width=5.  The difference betwen Sigma's is especially noticeable - as shown in the last two images.
+</td></tr>
+<tr><td><img id="image" src="images/hand-bw.jpg"><br>Original</td><td><img id="image" src="images/hand_box3.jpg"><br>2D Box filter, width=3</td></tr>
+<tr><td><img id="image" src="images/hand_box5.jpg"><br>2D Box Filter, Width =5</td><td><img id="image" src="images/hand_box5_1d.jpg"><br>2 x 1D Box filters, width=5</td></tr>
+<tr><td><img id="image" src="images/hand_gauss1_1d.jpg"><br>2 x 1D Guassian Filter, Sigma=1</td><td><img id="image" src="images/hand_gauss3_1d.jpg"><br>2 x 1D Gaussian Filter, Sigma=3</td></tr>
+<tr><td colspan="2">
+The same effects can be seen as applied to the hand image.  Again as we increase the Sigma term (which increases the size of the Guassian filter), or incrase the size of the Box filter the effect increases.
+</td></tr>
+<tr><td><img id="image" src="images/napali.png"><br>Original</td><td><img id="image" src="images/napali_box3.jpg"><br>2D Box filter, width=3</td></tr>
+<tr><td><img id="image" src="images/napali_box5.jpg"><br>2D Box Filter, Width =5</td><td><img id="image" src="images/napali_box5_1d.jpg"><br>2 x 1D Box filters, width=5</td></tr>
+<tr><td><img id="image" src="images/napali_gauss1_1d.jpg"><br>2 x 1D Guassian Filter, Sigma=1</td><td><img id="image" src="images/napali_gauss3_1d.jpg"><br>2 x 1D Gaussian Filter, Sigma=3</td></tr>
+<tr><td colspan="2">
+A final example of smoothing, using one of my own images. Again the smoothing is quite evident, especially in the last images, giving the effect of a foggy camera lens.  
+</td></tr>
+</table>
+
+</div>
+
+<div id="section">
+<h2>Edges</h2>
+<div id="section_code">
+<h3>code:</h3>
+<ul>
+X,Y derivative 
+<li><a href="makeDiff1D.m">makeDiff1D.m</a> - creates a 1D derivative estimation filter.</li>
+<li><a href="convolve1D.m">convolve1D.m</a> - convolves a 1D filter and an image (reused from smoothing).</li>
+<li><a href="rescaleDiffImage.m">rescaleDiffImage.m</a> - helper function that shifts and scales the intensities in a derivative image so they are in the range [0,255].  Only used for display purposes.</li>
+Edge Map
+<li><a href="edgeMap.m">edgeMap.m</a> - generates the edge map (ie gradient magnitude) of an image.  This function makes use of the derivative code above as well.</li>
+Orientation Map
+<li><a href="orientationMap.m">orientationMap.m</a> - generates the orientation map (ie gradient orientation).  Also makes use of the derivative code above.</li>
+</ul>
+</div>
+<div id="section">
+<b>Code Description</b>
+<p>
+I've reused the convolve code written above, and added a derivative filter generator.  This allows simple generation of both X and Y (by using transpose of the output of makeDiff1D()) derivatives.  I chose to use the simple 1D derivative filters of width = 3.
+</p>
+<p>
+Then I've also added two methods, edgeMap() which takes and image and generates the gradient magnitude images, and orientationMap() wihch takes the image and generates the gradient orientation at each pixel.  Both filters make use of the derivative code.
+</p>
+<p>
+For the edges at different scale portion, I reuse the Gaussian filters used in the first section, and the derivative code used in this section.
+</p>
+</div>
+<div id="section">
+<h3>examples:</h3>
+
+<table>
+<tr><td><img id="image" src="images/capitol_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/capitol_x.jpg"><br>Derivative in Y-direction.</td></tr>
+<tr><td><img id="image" src="images/capitol_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/capitol_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td colspan="2">
+<p>
+The above images demonstrate the use of the derivative filter on the provided capitol image. This image makes it easy to see a difference between the x and y derivative images.  The Derivative in the X-Direction emphasizes all the vertical lines (ie the sides of the windows), whild the Derivative in the Y-Direction emphasizes all the horizonal lines in the image (ie the horizontal rings on the dome).
+<p>
+The edge map is also shown - as this incorporates both directions, you can see both vertical and horizontal lines very prominantly.  It's interesting that this gradient magnitude doesn't show as much noise as the orientation map. This may be in part to the rescaling of the intensities for display.  The orientation map is next, and as mentioned, is extremely sensitive to noise.  There appears to be a great deal of noise in the background around the capitol dome.  Even with the noise it's easy to see the shape of the capitol.
+</td></tr>
+
+<tr><td><img id="image" src="images/hand_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/hand_x.jpg"><br>Derivative in Y-direction.</td></tr>
+<tr><td><img id="image" src="images/hand_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/hand_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td colspan="2">
+<p>
+The provided hand images are also shown here.  Again the X and Y derivatives are plain to see, as the vertical and horizontal lines are show very prominantly in each respectively.
+<p>
+Again the edge map is shown, and contains both horizontal and vertical edges.  This image has a little more texture in the background, and becomes visiable in the background of the edge map.  That same texture becomes very visible in the orientatin map.  But again, even with all the background noise, the shape of the hand is still visible.
+</td></tr>
+
+<tr><td colspan="2"><img id="image" src="images/arch.png"><br>Original</td></tr>
+<tr><td><img id="image" src="images/arch_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/arch_x.jpg"><br>Derivative in Y-direction.</td></tr>
+<tr><td><img id="image" src="images/arch_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/arch_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td colspan="2">
+<p>
+This final example of the edge map is one of my own images.  I've shown the original at the top for reference.  I thought this image might provide some interesting edge examples, as it would be neat to be able to extract the shape of the arch from the image.  Unfortunately this isn't completely possible using current techniques, but it does she some light on the difficulties of edge detection.
+<p>
+The derivative images both show some contour around the arch, but also include a significant amount of background noise.  This noise is propogated on to the edge map and orientation map.  The orientation map is so noisy, only a faint arch way outline is even visible.
+</td></tr>
+</table>
+</div>
+
+<div id="section">
+<h2>Edges at specific scales</h2>
+<div id="section_code">
+</div>
+<div id="section">
+<b>Code Description</b>
+<p>
+In this seciton  I reuse the Gaussian filters used in the first section, and the derivative code used in the frst edges section.  Please see descriptions there.
+</p>
+</div>
+<div id="section">
+<h3>examples:</h3>
+<table>
+<tr><td><img id="image" src="images/capitol_gauss3_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/capitol_gauss3_x.jpg"><br>Derivative in Y-direction.</td></tr>
+<tr><td><img id="image" src="images/capitol_gauss3_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/capitol_gauss3_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td colspan="2">
+<p>
+This group shows the X-derivative, Y-deriviative, edge map, and orientation map on the capitol image after smoothing with Sigma=3.  The edges on these images appear much more thick - probably because they are now much more gradual changes in intensity instead of the sharp changes in the original image.
+<p>
+Likewise the noise in the orientation image is much lessened.  You can see the capitol dome quite well (again the edges are very thick), and the background noise seems to have smoohted into homogenous regions.
+</td></tr>
+<tr><td><img id="image" src="images/capitol_guass5_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/capitol_guass5_x.jpg"><br>Derivative in Y-direction.</td></tr>
+<tr><td><img id="image" src="images/capitol_guass5_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/capitol_guass5_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td colspan="2">
+<p>
+This group shows the same images, but with Sigma=5.  Again this shows even thicker lines.  Additionally, there is so much smoothing going on that some of the featurea are starting to blend into each other.  This results in edges that are less distinct.  For example it's much more difficult to pick out individual windows in the derivative images, a task that was simple before.
+<p>
+</td></tr>
+</table>
+</div>
+
+<div id="section">
+<h2>Template matching</h2>
+<div id="section_code">
+<h3>code:</h3>
+<ul>
+<li><a href="correlate.m">correlate.m</a> - correlates an image with a 2D mask.</li>
+<li><a href="makeStencil.m">makeStencil.m</a> - creates a stencil that can be used for pattern matching from an image.</li>
+<li><a href="rescaleDiffImage.m">rescaleDiffImage.m</a> - helper function from the Edges section, that shifts and scales the intensities in a derivative image so they are in the range [0,255].  Only used for display purposes, we use it here as well.</li>
+</ul>
+</div>
+<div id="section">
+<b>Code Description</b>
+<p>
+I've tried to be correct in using a convolution for the smoothing and edge filter tasks, and a correlation for this template matching task.  Consequently I created a correlation function.  Instead of handling both 1D and 2D, this function only handles correlation with a 2D mask.
+</p>
+<p>
+To make things easier, I also created a makeStencil function that takes an image (a cropped image of the target shape), and makes it square and odd-sided, and normalizes the non-zero pixels to sum to 1.  All of these features make the correlation implementation very straightforward.
+</p>
+<p>
+Finally, we re-use the rescaleDiffImage here, as the results of the correlation contain a very large range of values, in particular very high values.  We use this function for displaying the the correlation results.
+</p>
+</div>
+<div id="section">
+<h3>examples:</h3>
+
+<table>
+<tr><td><img id="image" src="images/shapes-bw.jpg"><br>Search image</td><td><img id="image" src="images/diamond_shape.jpg"><br>Target shape</td></tr>
+<tr><td><img id="image" src="images/diamond_shape_match.jpg"><br>the scaled results of the correlation.</td><td><img id="image" src="images/diamond_shape_match_th.jpg"><br>Thresholded results of the correlation.</td></tr>
+<tr><td colspan="2"><img id="image" src="figures/diamond_match_hist.png"><br>Histogram of the match result image.</td></tr>
+<tr><td colspan="2">
+<br><br>
+<p>
+The above results demonstrate the template matching code.  The top left image is the "search image", or the image in which we are performing the search.  The top right image is the image we will be searching for (a diamond shape).  We generate the stencil from this image.
+The middle left image is the result of the corrlation, scaled for display.  In the middle right is the result of thresholding the correlation result for the top hits. And the last image is a histogram of the correlation result.
+<p>
+The correlation result shows several bright spots, almost like stars, these correlate well with the location of the different shapes... since there is some overlap with each shape, all shapes appear to give some "good" response to the correlation.  And those shapes that look most like the diamond appear to give the better results.  By looking at the histogram of the image we were able to pick a threshold of <b>1.18x10<sup>4</sup></b>. This selection took some back and forth of looking at the histogram and the resulting thresholded image.
+<p>
+As you can see this thresholded image isn't a perfect correlation.  Some of the white dots (indicating matches) aren't necessarily over a diamond, but every dot is over a "diamond-like" shape, so we haven't done too bad with this very simple approach.
+<br><br>
+</td></tr>
+<tr><td><img id="image" src="images/shapes-bw.jpg"><br>Search image</td><td><img id="image" src="images/weird_shape.jpg"><br>Target shape</td></tr>
+<tr><td><img id="image" src="images/weird_shape_match.jpg"><br>the scaled results of the correlation.</td><td><img id="image" src="images/weird_shape_match_th.jpg"><br>Thresholded results of the correlation.</td></tr>
+<tr><td colspan="2"><img id="image" src="figures/weird_match_hist.png"><br>Histogram of the match result image.</td></tr>
+<tr><td colspan="2">
+<br><br>
+<p>
+This time we use the same search image but select a different target shape, which we affectionately call the "weird" shape. 
+Again we show the scaled correlation results and a thresholded result.  Because we are searching the same image, we actually ended up using the same threshold for this image, again determined from the histogram of the correlation image.
+<p>
+The results are also respectable.  We found both of the weird shapes, but also have 4 false positives.  The false positives are mainly due to shapes that are very similar to the target shape. 
+<p>
+<br><br>
+</td></tr>
+<tr><td><img id="image" src="images/text.png"><br>Search image</td><td><img id="image" src="images/e_shape.png"><br>Target shape</td></tr>
+<tr><td><img id="image" src="images/e_shape_match.jpg"><br>the scaled results of the correlation.</td><td><img id="image" src="images/e_shape_match_th.jpg"><br>Thresholded results of the correlation.</td></tr>
+<tr><td colspan="2"><img id="image" src="figures/e_match_hist.png"><br>Histogram of the match result image.</td></tr>
+<tr><td colspan="2">
+<br><br>
+<p>
+In this example we are looking for the shape of the letter e in a scanned text document. We approached this problem the same as the others, but found that the whitespace between the letters was actually giving a much higher correlation score to the target letter, than any of the letters.  In fact our result looked just like the image in the middle left, except with reversed colors - indicating a high match in the margins and low match on the letters.  To solve that problem, we simply inverted the intensities in the original image, so that letters are white and background is black.  This allows the mask and letter correlation to be the higher correlation scores.
+<p>
+The results again are not bad.  As shown in the thresholded match image, the correlation found 5 "e" shapes.  While it's hard to determine precisely the matches, a general eye-ball comparison leaves one to thing that we landed on an "e" in all but 5 of those responses.  Which seems pretty good.  Unfortunately we also missed several e-shapes in other parts of the text image.
+<p>
+We selecte a threshold of <b>950</b>, again by examining the histogram and the results of various threshold choices.  Going much lower than this threshold presented too many false positives.
+<br><br>
+</td></tr>
+
+<tr><td><img id="image" src="images/text.png"><br>Search image</td><td><img id="image" src="images/a_shape.png"><br>Target shape</td></tr>
+<tr><td><img id="image" src="images/a_shape_match.jpg"><br>the scaled results of the correlation.</td><td><img id="image" src="images/a_shape_match_th.jpg"><br>Thresholded results of the correlation.</td></tr>
+<tr><td colspan="2"><img id="image" src="figures/a_match_hist.png"><br>Histogram of the match result image.</td></tr>
+<tr><td colspan="2">
+<br><br>
+<p>
+We return to the text image for our final example.  We approached this problem in the same way, and chose a threshold of <b>1.14x10<sup>3</sup></b>.
+While both targets were searched for in the same search image, threshold choiced appeared to be more sensitve than in the shapes example.
+<p>
+Our results are also drastically different from the "e" shape search.  Again, using eye-ball comparisons, we appear to have found several false positives.  I can convince myself that at least 2 of the matched locations is an "a", the other 5 appear to be false positivies.  I attribute this poor performance mainly to the likeness "a" has to so many other letters.  I am unsure why the "e" search appears to have performed so much better, since both searches used the same methods.
+<br><br>
+</td></tr>
+
+</table>
+</body>
+</html>
