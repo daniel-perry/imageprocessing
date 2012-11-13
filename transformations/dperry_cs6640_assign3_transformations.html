@@ -1,0 +1,214 @@
+<html>
+<head>
+<title>CS6640 Danny Perry - Transformations </title>
+</head>
+<!-- libs -->
+<script type="text/javascript" src="LaTeXMathML.js"></script>
+
+<!-- css -->
+<!--
+<link rel="stylesheet" type="text/css" href="style.css"></link>
+-->
+<style>
+img {width:500px;}
+#image {width:300px;}
+#section {width: 900px;}
+table {max-width:810px;}
+</style>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-35081386-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+<body>
+
+<div id="section">
+<h1>Transformations</h1>
+<h2>Daniel Perry</h2>
+<ul>
+<li>Code is written in matlab</li>
+<li>I've included a file <a href="code/main.m">main.m</a> that creates all the graphs and derived images shown below.</li>
+</ul>
+</div>
+
+<div id="section">
+<h2>Affine Image Transformation</h2>
+<div id="section_code">
+<h3>code:</h3>
+<ul>
+Transform and Interpolation
+<li><a href="code/transform.m">transform.m</a> - transforms the given images using the specified affine transformation and interpolation.  It can transform to the same size as the original image, or to an image large enough to hold the transformed data.</li>
+<li><a href="code/resample_nearest.m">resample_nearest.m</a> - resamples an image at the specified point by finding the "nearest neighbor".</li>
+<li><a href="code/resample_linear.m">resample_linear.m</a> - resamples an image at the specified point with bi-linear interpolation.</li>
+Affine transformation matrices
+<li><a href="code/makeTranslate.m">makeTranslate.m</a> - creates a translation matrix.</li>
+<li><a href="code/makeRotate.m">makeRotate.m</a> - creates a rotation matrix.</li>
+<li><a href="code/makeScale.m">makeScale.m</a> - creates a scaling matrix.</li>
+<li><a href="code/makeShear.m">makeShear.m</a> - creates a shearing matrix.</li>
+</ul>
+</div>
+<div id="section">
+<b>Code Description</b>
+<p>
+I've created a transform function that takes an image, affine transformation matrix, interpolation type flag, and a flag to indicate whether to use the same size as the original image, or to use the projected image size.
+It then returns the image transformed using the specified parameters.
+</p>
+<p>
+The transform function makes use of the resample_nearest and resample_linear functions, each of which takes the image and an index (floating point), and returns the nearest neighbor or linearly interpolated value, respectively.
+</p>
+<p>
+To facilitate performing various affine transformations I've put together several functions to create the appropriate affine transformation matrix.  
+The functions are makeTranslate, makeRotate, makeScale, and makeShear.  Each takes the appropriate parameters and returns a populated matrix.
+The different matrices can be multiplied together to chain together a series of affine transformations, for example "translate + rotate + translate".
+</p>
+</div>
+<div id="section">
+<h3>examples:</h3>
+<ul>
+<li>Below are examples of different affine transformations</li>
+<li>Face images are from the Extended Yale B Data Set (http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html)</li>
+</ul>
+<table>
+<tr><td><img id="image" src="images/face1.png"><br>Original</td><td><img id="image" src="images/f1_trans_nearest.png"><br>translation by (50,50), nearest neighbor</td></tr>
+<tr><td><img id="image" src="images/f1_trans_linear.png"><br>translation by (50,50), linear interpolation</td><td></td></tr>
+<tr><td colspan="2">
+The above example shows a translation by (50,50), as you can see the image has been shifted by 50 pixels in the x and y directions.  Both nearest and linear interpolations are shown. Note that we fill space outside the original image's domain with 0, which displays black.
+</td></tr>
+<tr><td><img id="image" src="images/f1_rot_nearest.png"><br>Rotated 45 degrees with nearest neighbor</td><td><img id="image" src="images/f1_rot_linear.png"><br>Rotated 45 degrees with linear interpolation</td></tr>
+<tr><td><img id="image" src="images/f1_rot_nearest_full.png"><br>Same but resized to include all resampled data.</td><td><img id="image" src="images/f1_rot_linear_full.png"><br>Same but resized to include all resampled data.</td></tr>
+<tr><td><img id="image" src="images/f1_rot_nearest_zoomed.png"><br>zoomed in nearest neighbor</td><td><img id="image" src="images/f1_rot_linear_zoomed.png"><br>zoomed linear interpolation</td></tr>
+<tr><td colspan="2">
+    Rotation is demonstrated here.  
+    Here we rotate by 45 degrees.
+    The frist two images show the result when the resampled image is the same size as the original, resulting in the transformed data going outside the image bounds.
+    The second two images show the result when the resampled image is resized to capture all the sampled data.
+    If you look closely at the large images you can see a difference between nearest neighbor and linear interpolation, we also show a zoomed in version emphasizing the improved sampling obtained with linear interpolation.
+</td></tr>
+<tr><td><img id="image" src="images/f1_scale_nearest.png"><br>Scaled image by (0.5,0.5) using nearest neighbor</td><td><img id="image" src="images/f1_scale_linear.png"><br>Scaled image by (0.5,0.5) using linear interpolation</td></tr>
+<tr><td colspan="2">
+    Above scaling is shown.
+    Again, because we (optionally) force the result to have the same dimensions as the original, we can see the effect of scaling from the black area that lies outside the original image domain.
+</td></tr>
+<tr><td><img id="image" src="images/f1_shear_nearest.png"><br>Shear by (0,0.5) using nearest neighbor</td><td><img id="image" src="images/f1_shear_linear.png"><br>Shear by (0,0.5) using linear interpolation.</td></tr>
+<tr><td colspan="2">
+    Here we show a shear transformation by (0,0.5).
+    We've changed the output image to be large enough for the entire output, to show the full effect of the shear.
+    While we haven't zoomed in, this transformation also has noticeable different between nearest neighbor and linear interpolation, for example look around the eye lids.
+</td></tr>
+<tr><td><img id="image" src="images/f1_all_nearest.png"><br>Combined affine transform using nearest neighbor</td><td><img id="image" src="images/f1_all_linear.png"><br>Combined affine transformation using linear interpolation.</td></tr>
+<tr><td colspan="2">
+    For this example we combine Translation, Rotation, and Shear to produce an affine transformation.
+    The transformation matrix ends up looking like this:<br>
+    0.8119 0.9397 8.5822<br>
+    -0.7687 0.3420 -114.0426<br>
+    0 0 1<br>
+    Making use of all 6 DOF's with an affine transformation.
+</td></tr>
+
+</table>
+
+</div>
+
+<div id="section">
+<h2>Transform from landmarks</h2>
+<div id="section_code">
+<h3>code:</h3>
+<ul>
+<li><a href="code/transform.m">transform.m</a> - same as before.</li>
+<li><a href="code/resample_nearest.m">resample_nearest.m</a> - same as before.</li>
+<li><a href="code/resample_linear.m">resample_linear.m</a> - same as before.</li>
+<li><a href="code/get_points.m">get_points.m</a> - displays both images, and allows the user to select correspondence points, and saves them to a file.</li>
+<li><a href="code/show_points.m">show_points.m</a> - displays both images, and the specified correspondence points plotted on top.  Useful to comparing correspondence points and resulting warped image.</li>
+<li><a href="code/affine_from_points.m">affine_from_points.m</a> - finds the affine transformation matrix for the specified correspondence points.  This will solve the problem for the exact solution case, and the over-constrained case.</li>
+</ul>
+</div>
+<div id="section">
+<b>Code Description</b>
+<p>
+I've reused the transform and resampling functions from above, and introduce 3 new functions for this section.
+</p>
+<p>
+The first two are for a very bare-bones way of gathering correspondence points in matlab.  The get_points() method will display both images, and allow the user to select the correspondence points. The show_points() method will display the images with those points on top - which is useful for comparing the result of the image warp.
+</p>
+<p>
+The third new piece is the crux of this section - affine_from_points() calculates the affine transformation matrix that satisfies the correspondence points.
+</p>
+<p>
+A note on usage: previous functions expected image matrices, the get_ and show_ functions take the files names - this seemed an appropriate interface for saving out the correspondence points to a file.  But it can potentially be confusing if you expect to pass in the image matrix, instead of the filename.
+</p>
+</div>
+<div id="section">
+<h3>examples:</h3>
+
+<table>
+<tr><td><img id="image" src="images/show_points_face_3.png"><br>Correspondence points</td><td><img id="image" src="images/f2_affine.png"><br>Result of the affine transformation.</td></tr>
+<tr><td colspan="2">
+    <p>
+    This example shows the 3 correspondence points in a screenshot of the "show_points()" display.  As you can see the two points towards the top of the first image correspond to two points on the cheeks of the second image, and the third point on the nose of the first image corresponds to the point on the lips of the second.
+    <p>
+    The result is show on the right, as you can see the is slightly sheared or rotated and stretched out to match the the points in the original image.
+    <p>
+    This example demonstrates some of the transformations that are possible with an affine correspondence.  With no warping available the image doesn't deform at all, but it definitely stretches and rotates to try to match the points as best it can with the limited degrees of freedom.
+</td></tr>
+
+<tr><td><img id="image" src="images/show_points_face_5.png"><br>Correspondence points</td><td><img id="image" src="images/f2_affine_m5.png" height="500"><br>Resulting affine transformation.</td></tr>
+<tr><td colspan="2">
+    <p>
+    This example shows the 5 correspondence points in a screenshot of the "show_points()" display. The points are mostly matched in location, except point 4 - which moves from the nose the right cheek, and point 5 that moves from the nasion to the left cheek.
+    <p>
+    The two offset points seem to be enough weight to move the result into the skewed form that is shown.  The transformation is trying to match the forehead/nasion point to the check while also trying to match the nose with the other cheek.  This results in some skew and stretching.
+    <p>
+    Again this example illustrates the limits of an affine transformation, and how the localized warping can handle these kind of constraints in a more visually appealing way - especially for face images.
+</td></tr>
+
+<tr><td colspan="2"><img id="image" src="images/arch.png"><br>Original</td></tr>
+<tr><td><img id="image" src="images/arch_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/arch_x.jpg"><br>Derivative in Y-direction.</td></tr>
+<tr><td><img id="image" src="images/arch_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/arch_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td colspan="2">
+<p>
+<p>
+</td></tr>
+</table>
+</div>
+
+<div id="section">
+<h2>Nonlinear warping using radial basis functions</h2>
+<div id="section_code">
+</div>
+<div id="section">
+<b>Code Description</b>
+<p>
+</p>
+</div>
+<div id="section">
+<h3>examples:</h3>
+<table>
+<tr><td><img id="image" src="images/capitol_gauss3_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/capitol_gauss3_x.jpg"><br>Derivative in Y-direction.</td></tr>
+<tr><td><img id="image" src="images/capitol_gauss3_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/capitol_gauss3_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td colspan="2">
+<p>
+<p>
+</td></tr>
+<tr><td><img id="image" src="images/capitol_guass5_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/capitol_guass5_x.jpg"><br>Derivative in Y-direction.</td></tr>
+<tr><td><img id="image" src="images/capitol_guass5_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/capitol_guass5_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td colspan="2">
+<p>
+<p>
+</td></tr>
+</table>
+</div>
+
+
+</body>
+</html>
