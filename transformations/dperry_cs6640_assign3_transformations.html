@@ -171,40 +171,60 @@ A note on usage: previous functions expected image matrices, the get_ and show_ 
     <p>
     Again this example illustrates the limits of an affine transformation, and how the localized warping can handle these kind of constraints in a more visually appealing way - especially for face images.
 </td></tr>
-
-<tr><td colspan="2"><img id="image" src="images/arch.png"><br>Original</td></tr>
-<tr><td><img id="image" src="images/arch_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/arch_x.jpg"><br>Derivative in Y-direction.</td></tr>
-<tr><td><img id="image" src="images/arch_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/arch_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
-<tr><td colspan="2">
-<p>
-<p>
-</td></tr>
 </table>
 </div>
 
 <div id="section">
 <h2>Nonlinear warping using radial basis functions</h2>
 <div id="section_code">
+<h3>code:</h3>
+<ul>
+<li><a href="code/transform_local.m">transform_local.m</a> - transforms the given images using the specified local transformation parameters. </li>
+<li><a href="code/gaussian_kernel.m">gaussian_kernel.m</a> - evaluate the kernel value given sigma, current correspondence point, and the local point. </li>
+<li><a href="code/resample_nearest.m">resample_nearest.m</a> - same as above. </li>
+<li><a href="code/resample_linear.m">resample_linear.m</a> - same as above.</li>
+Affine transformation matrices
+<li><a href="code/local_from_points.m">local_from_points.m</a> - determines the proper local changes given the correspondence points and sigma.</li>
+</ul>
 </div>
 <div id="section">
 <b>Code Description</b>
 <p>
+Here we use a slightly modified version of transform() called transform_local() - which instead of applying an affine transformation over the whole image, applies the local warps according to the kernel, sigma, and correspondence points.
+</p>
+<p>
+To make sure the local warping vectors are set correctly, we've defined a local_from_points() method that takes the correspondence points and calculates the proper warping vectors, as described in the Durrleman paper.
+Those points and warping vectors are then passed to transform_local() to perform the actual transform.
+</p>
+<p>
+Linear and nearest neighbor interpolation are again available.
 </p>
 </div>
 <div id="section">
 <h3>examples:</h3>
 <table>
-<tr><td><img id="image" src="images/capitol_gauss3_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/capitol_gauss3_x.jpg"><br>Derivative in Y-direction.</td></tr>
-<tr><td><img id="image" src="images/capitol_gauss3_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/capitol_gauss3_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td><img id="image" src="images/show_points_ch_local_3.png"><br>3 correspondence points</td><td><img id="image" src="images/ch_local_3.png"><br>Resulting warped image with sigma=20.</td></tr>
+<tr><td><img id="image" src="images/ch_local_3_30.png"><br>Resulting warped image with sigma=30</td><td><img id="image" src="images/ch_local_3_50.png"><br>Resulting warped image with sigma=50</td></tr>
 <tr><td colspan="2">
 <p>
+Here we show some examples of local non-linear image warping, using radial basis functions.
+For this example we use the provided checker board image to make it easy to see the deformations.
+The first image shows the 3 correspondence points.
 <p>
+The next three images show the result of warping the images using those correspondence points with different sigmas.
+It's interesting in this case the warping becomes more smoothing the the higher sigmas.
+I think the best looking image is the sigma=50, where teh deformations seem to blend into each other.
 </td></tr>
-<tr><td><img id="image" src="images/capitol_guass5_y.jpg"><br>Derivative in X-direction</td><td><img id="image" src="images/capitol_guass5_x.jpg"><br>Derivative in Y-direction.</td></tr>
-<tr><td><img id="image" src="images/capitol_guass5_edge.jpg"><br>Edge map (ie gradient magnitude)</td><td><img id="image" src="images/capitol_guass5_orient.jpg"><br>Orientation map (ie gradient angle with x-axis)</td></tr>
+<tr><td><img id="image" src="images/show_points_f3_local_7.png"><br>7 correspondence points</td><td><img id="image" src="images/f3_local_7_20.png"><br>Resulting warped image with sigma=20</td></tr>
+<tr><td><img id="image" src="images/f3_local_7_30.png"><br>Same with sigma=30</td><td><img id="image" src="images/f3_local_7_50.png"><br>Same with sigma=50</td></tr>
 <tr><td colspan="2">
 <p>
+We have some fun with the last example, using another face image.
+The 7 correspondence points are shown in the first image.
 <p>
+The last three images show the warping at different values of sigma, with the final image being an example of modern art.
+<p>
+It is interesting to note how the more correspondence/warping points in the image, the stronger the effect of the warping (which is plainly depicted in this example).
 </td></tr>
 </table>
 </div>

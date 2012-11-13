@@ -10,7 +10,64 @@ face2 = rgb2gray(imread(face2_fn));
 face3_fn = '../images/face3.png';
 face3 = rgb2gray(imread(face3_fn));
 
-% Transform from landmarks
+% Local non-linear transforms
+%{
+sigma = 20
+show_points(checker_fn, checker_fn, '../data/face_3');
+[pts,alpha] = local_from_points('../data/face_3', sigma)
+ch_local_3 = transform_local( checker, pts, alpha, sigma, 'linear' );
+imwrite(ch_local_3,'../images/ch_local_3.png');
+figure
+imshow(ch_local_3)
+
+sigma = 30
+show_points(checker_fn, checker_fn, '../data/face_3');
+[pts,alpha] = local_from_points('../data/face_3', sigma)
+ch_local_3 = transform_local( checker, pts, alpha, sigma, 'linear' );
+imwrite(ch_local_3,'../images/ch_local_3_30.png');
+figure
+imshow(ch_local_3)
+
+sigma = 50
+show_points(checker_fn, checker_fn, '../data/face_3');
+[pts,alpha] = local_from_points('../data/face_3', sigma)
+ch_local_3 = transform_local( checker, pts, alpha, sigma, 'linear' );
+imwrite(ch_local_3,'../images/ch_local_3_50.png');
+figure
+imshow(ch_local_3)
+%}
+
+%{
+sigma = 20
+%show_points(face3_fn, face3_fn, '../data/face_7');
+[pts,alpha] = local_from_points('../data/face_7', sigma)
+f3_local_7 = transform_local( face3, pts, alpha, sigma, 'linear' );
+imwrite(f3_local_7,'../images/f3_local_7_20.png');
+%figure
+%imshow(f3_local_7)
+
+sigma = 30
+%show_points(face3_fn, face3_fn, '../data/face_7');
+[pts,alpha] = local_from_points('../data/face_7', sigma)
+f3_local_7 = transform_local( face3, pts, alpha, sigma, 'linear' );
+imwrite(f3_local_7,'../images/f3_local_7_30.png');
+%figure
+%imshow(f3_local_7)
+%}
+
+sigma = 40
+%show_points(face3_fn, face3_fn, '../data/face_7');
+[pts,alpha] = local_from_points('../data/face_7', sigma)
+f3_local_7 = transform_local( face3, pts, alpha, sigma, 'linear' );
+imwrite(f3_local_7,'../images/f3_local_7_50.png');
+%figure
+%imshow(f3_local_7)
+
+
+
+
+
+% Affine transforms from landmarks
 %{
 % get_points(face1_fn, face2_fn, 3, '../data/face_3' )
 show_points(face1_fn, face2_fn, '../data/face_3');
@@ -21,6 +78,7 @@ figure
 imshow(f2_affine)
 %}
 
+%{
 % get_points(face1_fn, face2_fn, 5, '../data/face_5' )
 show_points(face1_fn, face2_fn, '../data/face_5');
 m5 = affine_from_points('../data/face_5')
@@ -28,7 +86,7 @@ f2_affine_m5 = transform( face2, m5, 'linear', false );
 imwrite(f2_affine_m5,'../images/f2_affine_m5.png');
 figure
 imshow(f2_affine_m5)
-
+%}
 
 % Affine Image Transformations
 %{
