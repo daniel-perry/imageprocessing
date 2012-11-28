@@ -2,18 +2,21 @@
 % params:
 %  edge - the edge image
 %  theta - a list [theta_min, d_theta,  theta_max]
-function accum = hough( edge , theta )
+% returns:
+%  accum - the accumulator image
+%  rho - a list [rho_min, d_rho, rho_max]
+function [accum,rho] = hough( edge , theta )
 
 %dtheta = theta ./ accum_size(1)
 %drho = rho ./ accum_size(2)
 
-accum_x = ceil((theta(3)-theta(1))/theta(2)) + 1
+accum_x = ceil((theta(3)-theta(1))/theta(2)) + 1;
 
-rho_max = ceil(norm(size(edge)))
-rho_min = 0
-d_rho = rho_max/accum_x
-rho = [rho_min, d_rho, rho_max]
-accum_y = accum_x
+rho_max = ceil(norm(size(edge)));
+rho_min = 0;
+d_rho = rho_max/accum_x;
+rho = [rho_min, d_rho, rho_max];
+accum_y = accum_x;
 
 accum = zeros(accum_x,accum_y);
 
