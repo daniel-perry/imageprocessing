@@ -9,7 +9,7 @@ max_val = max(accum(:));
 
 thold = percent*max_val;
 
-loc = accum > thold;
+loc = accum >= thold;
 
 count = sum(loc(:))
 

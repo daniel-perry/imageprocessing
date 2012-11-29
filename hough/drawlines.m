@@ -1,6 +1,6 @@
 function result = drawlines( orig, params )
 
-line_color = [255 0 0];
+line_color = uint8([255 0 0]);
 
 result = uint8(zeros(size(orig,1),size(orig,2),3)); %rgb
 result(:,:,1) = orig;
