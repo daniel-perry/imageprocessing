@@ -7,7 +7,7 @@ runway_fn = 'images/runway.png';
 runway = imread(runway_fn);
 
 addPath('edges'); % for edge code from assignment 2
-%{
+
 shapes_edge = edgeMap( shapes );
 imwrite(shapes_edge, 'images/shapes_edge.png');
 shapes_theta = [0,pi/1000,pi/2];
@@ -64,7 +64,6 @@ shapes_accum_decr_points = drawpoints( shapes_accum_decr_rescaled, params, shape
 imwrite(shapes_accum_decr_points, sprintf('images/shapes_accum_decr_points_%0.1f.png',thold));
 shapes_lines = drawlines( shapes, params );
 imwrite(shapes_lines, sprintf('images/shapes_decr_lines_%0.1f.png',thold));
-%}
 
 %{
 subplot(2,3,1);
@@ -99,7 +98,7 @@ runway_accum_points = drawpoints( runway_accum_rescaled, params, runway_theta, r
 imwrite(runway_accum_points, sprintf('images/runway_accum_points_%0.2f.png',thold));
 runway_lines = drawlines( runway, params );
 imwrite(runway_lines, sprintf('images/runway_lines_%0.2f.png',thold));
-thold = .7;
+thold = .5;
 params = findmaxima( runway_accum, runway_theta, runway_rho, thold );
 runway_accum_points = drawpoints( runway_accum_rescaled, params, runway_theta, runway_rho );
 imwrite(runway_accum_points, sprintf('images/runway_accum_points_%0.2f.png',thold));
@@ -142,4 +141,46 @@ runway_accum_decr_points = drawpoints( runway_accum_decr_rescaled, params, runwa
 imwrite(runway_accum_decr_points, sprintf('images/runway_accum_decr_points_%0.1f.png',thold));
 runway_lines = drawlines( runway, params );
 imwrite(runway_lines, sprintf('images/runway_decr_lines_%0.1f.png',thold));
+
+shapes_ori = orientationMap( shapes );
+imwrite(rescaleDiffImage(shapes_ori), 'images/shapes_ori.png');
+shapes_theta = [0,pi/1000,pi/2];
+[shapes_accum_ori,shapes_rho] = hough_orientation( shapes_edge, shapes_ori , shapes_theta );
+shapes_accum_ori_rescaled = rescaleDiffImage(shapes_accum_ori);
+imwrite(shapes_accum_ori_rescaled, 'images/shapes_accum_ori.png');
+shapes_rho = shapes_rho
+thold = .9;
+params = findmaxima( shapes_accum_ori, shapes_theta, shapes_rho, thold );
+shapes_accum_ori_points = drawpoints( shapes_accum_ori_rescaled, params, shapes_theta, shapes_rho );
+imwrite(shapes_accum_ori_points, sprintf('images/shapes_accum_ori_points_%0.1f.png',thold));
+shapes_lines = drawlines( shapes, params );
+imwrite(shapes_lines, sprintf('images/shapes_ori_lines_%0.1f.png',thold));
+thold = .7;
+params = findmaxima( shapes_accum_ori, shapes_theta, shapes_rho, thold );
+shapes_accum_ori_points = drawpoints( shapes_accum_ori_rescaled, params, shapes_theta, shapes_rho );
+imwrite(shapes_accum_ori_points, sprintf('images/shapes_accum_ori_points_%0.1f.png',thold));
+shapes_lines = drawlines( shapes, params );
+imwrite(shapes_lines, sprintf('images/shapes_ori_lines_%0.1f.png',thold));
+
+runway_ori = orientationMap( runway );
+imwrite(rescaleDiffImage(runway_ori), 'images/runway_ori.png');
+runway_theta = [0,pi/1000,pi/2];
+[runway_accum_ori,runway_rho] = hough_orientation( runway_edge, runway_ori , runway_theta );
+runway_accum_ori_rescaled = rescaleDiffImage(runway_accum_ori);
+imwrite(runway_accum_ori_rescaled, 'images/runway_accum_ori.png');
+runway_rho = runway_rho
+thold = .9;
+params = findmaxima( runway_accum_ori, runway_theta, runway_rho, thold );
+runway_accum_ori_points = drawpoints( runway_accum_ori_rescaled, params, runway_theta, runway_rho );
+imwrite(runway_accum_ori_points, sprintf('images/runway_accum_ori_points_%0.1f.png',thold));
+runway_lines = drawlines( runway, params );
+imwrite(runway_lines, sprintf('images/runway_ori_lines_%0.1f.png',thold));
+thold = .7;
+params = findmaxima( runway_accum_ori, runway_theta, runway_rho, thold );
+runway_accum_ori_points = drawpoints( runway_accum_ori_rescaled, params, runway_theta, runway_rho );
+imwrite(runway_accum_ori_points, sprintf('images/runway_accum_ori_points_%0.1f.png',thold));
+runway_lines = drawlines( runway, params );
+imwrite(runway_lines, sprintf('images/runway_ori_lines_%0.1f.png',thold));
+
+
 
