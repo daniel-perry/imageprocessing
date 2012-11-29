@@ -15,5 +15,5 @@ x_border_for_dy = (size(dy,1) - size(dx,1))/2;
 dx = dx(:,y_border_for_dx:size(dy,2));
 dy = dy(x_border_for_dy:size(dx,1),:);
 
-Out = atan2( dx, dy );
+Out = atan2( dy, dx ); % I have them swapped.. dx is really dy... ha
 
