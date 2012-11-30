@@ -1,41 +1,37 @@
 % Fit a GMM to the data using Expectation-Maximization
-% NOTE: I wrote this is octave, and when I ran it in 
-% matlab, I apparently don't have the statistics toolbox,
-% so you may want to run this part in octave... if it
-% doesn't work in matlab (as I couldn't test it in matlab).
-
-% Seg - labeled segmentation over the image
-% Thold - list of thresholds dividing each label group (gaussian)
+% params:
 % I - input image
 % k - number of gaussians
 % max_iters - max # iterations
-function [Means,Variances,Mix] = emgmm( I , k , max_iters)
+function [Means,Variances,Mix,Membership] = emgmm( I , k , max_iters)
 
 x = double(I(:)');
 n = size(x,2);
 
 % initial mean:
 %means=unifrnd(min(x),max(x),[k,1]);
-means=uniformrnd(min(x),max(x),[k,1]);
+%means=uniformrnd(min(x),max(x),[k,1]);
+means = kmeans(I,k,max_iters); % initialize with kmeans result
 
 % initial variance
 %variances=unifrnd(1,5,[k,1]); 
-variances=uniformrnd(1,5,[k,1]); 
+%variances=uniformrnd(1,5,[k,1]);
+variances=ones(k,1);
 
 % initial (even) mix
-mix=ones(k,1);  
-mix = mix ./ norm(mix,1); 
+mix = ones(k,1);  
+mix = mix ./ norm(mix,1);
 
 % initial membership 
 membership = zeros(k,n);
 
 % for checking convergence...
-premeans = means;
-prevariances = variances;
-premix = mix;
+premeans = means
+prevariances = variances
+premix = mix
 iters = 0;
 
-while( iters<max_iters )
+for( iters=1:max_iters )
 
 	%======================
 	% E-step (membership):
@@ -48,19 +44,24 @@ while( iters<max_iters )
 	membership = mixmat .* normalpdf( xmat, meanmat, varmat );
 	% normalize:
 	mem_normalizer = sum(membership,1); % n by 1
-	mem_normalizer = ones(k,1) * mem_normalizer ; %* ones(1,n); % k by n
+	mem_normalizer = ones(k,1) * mem_normalizer; %* ones(1,n); % k by n
 	membership = membership ./ mem_normalizer;
-  membership( mem_normalizer <= eps ) = 0; % hack to avoi NaNs
+  %membership( mem_normalizer <= eps ) = 0 % hack to avoi NaNs
 
 
 	%=======================
 	% M-step (parameters):
 	%======================
-	normalizer = sum(membership,2); % total responsibility over all pts from each gaussian.
-	means = sum((ones(k,1)*x) .* membership,2) ./ normalizer;
+	normalizer = sum(membership,2) % total responsibility over all pts from each gaussian.
+  memb_normed = membership ./ (normalizer*ones(1,n));
+	means = sum((ones(k,1)*x) .* memb_normed,2) ./ normalizer
+	%means = sum((ones(k,1)*x) .* membership,2) ./ normalizer
+  mn2 = memb_normed .* memb_normed;
+  mn2 = ones(k,1) ./ (ones(k,1)-sum(mn2,2));
 	dif = (ones(k,1)*x) - (means*ones(1,n));
-	variances = sum(dif .* dif .* membership, 2) ./ normalizer;
-	mix = normalizer ./ n;
+	variances = mn2 .* sum(dif .* dif .* memb_normed, 2) 
+	%variances = sum(dif .* dif .* membership, 2) ./ normalizer
+	mix = normalizer ./ n
 
 	%====================
 	% check convergence
@@ -85,6 +86,7 @@ sprintf('iters=%d',iters)
 Means = means;
 Variances = variances;
 Mix = mix;
+Membership = membership;
 
 % estimate intersection of gaussians:
 %middle = (means(1)+means(2))/2 ;
