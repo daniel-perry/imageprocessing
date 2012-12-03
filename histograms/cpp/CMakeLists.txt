@@ -28,6 +28,7 @@ ENDIF(ITK_FOUND)
 
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# emgmm
 SET( emgmm_SRCS
      emgmm.cc
 )
@@ -43,6 +44,25 @@ ADD_EXECUTABLE( emgmm
 				      )
 
 TARGET_LINK_LIBRARIES(  emgmm
+                        ${ITK_LIBRARIES}
+                     ) 
+
+# emgmm_md - multi-dimensional version
+SET( emgmm_md_SRCS
+     emgmm_md.cc
+)
+
+SET( emgmm_md_HDRS
+     emgmm_md.h
+)
+
+
+ADD_EXECUTABLE( emgmm_md
+                ${emgmm_md_SRCS}
+                ${emgmm_md_HDRS}
+				      )
+
+TARGET_LINK_LIBRARIES(  emgmm_md
                         ${ITK_LIBRARIES}
                      ) 
 
