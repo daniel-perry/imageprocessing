@@ -10,10 +10,24 @@
 #include <itkExceptionObject.h>
 
 // local
-#include "emgmm.h"
+#include "emgmm_md.h"
 
 int main(int argc, char * argv[])
 {
+
+  /*
+  // check the pdf computation:
+  GMM g(1);
+  g[0].mean.Fill(0);
+  g[0].covariance.SetIdentity();
+  g[0].update_inv();
+  GMM::value_type::FeatureVector x;
+  x.Fill(0);
+  std::cerr << "pdf(0)=" << g[0].pdf(x) << std::endl;
+  std::cerr << "exp(pdf(0))=" << exp(g[0].pdf(x)) << std::endl;
+  return 0;
+  */
+
   if(argc < 2)
   {
     std::cerr << "usage: " << argv[0] << " <k> <iters> <original.nrrd> <out.nrrd>" << std::endl;
@@ -91,12 +105,14 @@ int main(int argc, char * argv[])
   // EM loop
   for(iter=0; iter<iters; ++iter)
   {
+    maximization<ImageType>( original, r, gmm );
     std::cerr << "i=" << iter << std::endl;
     std::cerr << "model:" << std::endl;
     for(size_t i=0; i<gmm.size(); ++i)
       std::cerr << i << ": " << gmm[i].str() << std::endl;
-    maximization<ImageType>( original, r, gmm );
+
     log_like = expectation<ImageType>( original, gmm, r );
+    std::cerr << "log_like: " << log_like << std::endl;
     if( fabs(old_log_like - log_like) < epsilon ) break;
     old_log_like = log_like;
   }

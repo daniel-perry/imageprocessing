@@ -19,7 +19,7 @@ struct GaussianModel
   FeatureVector mean;
   CovarianceMatrix covariance;
   CovarianceMatrix inv_covariance;
-  float determinant;
+  double determinant;
   float mix;
 
   /** update the inverse and determinants 
@@ -36,8 +36,11 @@ struct GaussianModel
     CovarianceMatrix eigenVecs;
     eigenAnalysis.ComputeEigenValuesAndVectors( covariance, eigenVals, eigenVecs );
 
+    std::cerr << "covariance:" << std::endl;
+    std::cerr << covariance << std::endl;
+
     // determinant:
-    determinant = 1.f;
+    determinant = 1.;
     float totalPower = 0.f;
     size_t i;
     std::cerr << "eigenvals: ";
@@ -47,6 +50,9 @@ struct GaussianModel
       determinant *= eigenVals[i];
       totalPower += fabs(eigenVals[i]);
     }
+    std::cerr << std::endl;
+
+    std::cerr << "determinant: " << determinant << std::endl;
     std::cerr << std::endl;
 
     // inverse:
@@ -84,10 +90,6 @@ struct GaussianModel
 
   float pdf(const FeatureVector & x) const
   {
-    //float sd = std::sqrt(covariance);
-    //float scale = 1.f / (sd * std::sqrt(2*M_PI));
-    //float e_part = std::exp( -0.5 * ( (x-mean)*(x-mean) / covariance ) );
-    //return scale * e_part;
     // calc the multi-variate gaussian log-likelihood:
     // set https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     FeatureVector diff = x - mean;
@@ -126,17 +128,24 @@ Matrix outer_product(const Vector & v1, const Vector & v2)
 template<class ImageType>
 void maximization( const typename ImageType::Pointer & image, const WeightList & r, GMM & gmm)
 {
-   for(size_t i=0; i<gmm.size(); ++i)
-   {
-     gmm[i].mean.Fill(0);
-     gmm[i].covariance.Fill(0);
-     gmm[i].mix = 0;
-   }
+  std::cerr << "~~~~~~~~~~~" << std::endl;
+  std::cerr << "maximization" << std::endl;
+  std::cerr << "~~~~~~~~~~~" << std::endl;
+  typedef typename GMM::value_type::FeatureVector FeatureVector;
+  typedef typename GMM::value_type::CovarianceMatrix CovarianceMatrix;
 
-  typename ImageType::SizeType r;
-  r.Fill(1); // 3x3 neighborhood
-  itk::NeighborhoodIterator<ImageType> it(r, image, image->GetLargestPossibleRegion());
+  for(size_t i=0; i<gmm.size(); ++i)
+  {
+    gmm[i].mean.Fill(0);
+    gmm[i].covariance.Fill(0);
+    gmm[i].mix = 0;
+  }
+
+  typename ImageType::SizeType radius;
+  radius.Fill(1); // 3x3 neighborhood
+  itk::NeighborhoodIterator<ImageType> it(radius, image, image->GetLargestPossibleRegion());
   size_t sample_i;
+  float mix_squared = 0;
   for(sample_i=0,it.GoToBegin(); !it.IsAtEnd(); ++it,++sample_i)
   {
     FeatureVector x;
@@ -148,14 +157,13 @@ void maximization( const typename ImageType::Pointer & image, const WeightList &
     {
       gmm[i].mean += r[sample_i][i] * x;
       gmm[i].mix += r[sample_i][i];
+      mix_squared += r[sample_i][i]*r[sample_i][i];
     }
   }
   for(size_t i=0; i<gmm.size(); ++i)
   {
     gmm[i].mean /= gmm[i].mix;
   }
-  typedef typename GMM::value_type::FeatureVector FeatureVector;
-  typedef typename GMM::value_type::CovarianceMatrix CovarianceMatrix;
   for(sample_i=0,it.GoToBegin(); !it.IsAtEnd(); ++it,++sample_i)
   {
     FeatureVector x;
@@ -166,24 +174,72 @@ void maximization( const typename ImageType::Pointer & image, const WeightList &
     for(size_t i=0; i<gmm.size(); ++i)
     {
       FeatureVector diff = gmm[i].mean-x;
-      gmm[i].variance += r[sample_i][i] * outer_product(diff,diff);
+      gmm[i].covariance += outer_product<FeatureVector,CovarianceMatrix>(diff,diff) * r[sample_i][i] ;
     }
   }
   for(size_t i=0; i<gmm.size(); ++i)
   {
-    gmm[i].variance /= gmm[i].mix;
+    std::cerr << "unnormalized covariance:" << std::endl;
+    std::cerr << gmm[i].covariance << std::endl;
+
+    float norm_factor = 1/((1-mix_squared)*gmm[i].mix);
+    std::cerr << "norm_factor: " << norm_factor << std::endl;
+
+    //gmm[i].covariance /= gmm[i].mix;
+    gmm[i].covariance *= norm_factor;
     gmm[i].mix /= r.size();
     gmm[i].update_inv();
   }
 }
 
+/* 
+// this version expects a normal pdf, not a logpdf..
 template<class ImageType>
 float expectation( const typename ImageType::Pointer & image, const GMM & gmm, WeightList & r )
 {
+  std::cerr << "~~~~~~~~~~~" << std::endl;
+  std::cerr << "expectation" << std::endl;
+  std::cerr << "~~~~~~~~~~~" << std::endl;
   typedef typename GMM::value_type::FeatureVector FeatureVector;
-  typename ImageType::SizeType r;
-  r.Fill(1); // 3x3 neighborhood
-  itk::NeighborhoodIterator<ImageType> it(r, image, image->GetLargestPossibleRegion());
+  typename ImageType::SizeType radius;
+  radius.Fill(1); // 3x3 neighborhood
+  itk::NeighborhoodIterator<ImageType> it(radius, image, image->GetLargestPossibleRegion());
+  size_t sample_i;
+  float total_like = 0.f;
+  for(sample_i=0, it.GoToBegin(); !it.IsAtEnd(); ++it,++sample_i)
+  {
+    FeatureVector x;
+    for(size_t i=0; i<it.Size(); ++i)
+    {
+      x[i] = it.GetPixel(i);
+    }
+    float sample_like = 0.f;
+    for(size_t i=0; i<gmm.size(); ++i)
+    {
+      r[sample_i][i] = gmm[i].mix * gmm[i].pdf(x);
+      sample_like += r[sample_i][i];
+    }
+    for(size_t i=0; i<gmm.size(); ++i)
+    {
+      r[sample_i][i] /= sample_like;
+    }
+    total_like += sample_like;
+  }
+  return total_like/r.size();
+}
+*/
+
+// this version expects a logpdf
+template<class ImageType>
+float expectation( const typename ImageType::Pointer & image, const GMM & gmm, WeightList & r )
+{
+  std::cerr << "~~~~~~~~~~~" << std::endl;
+  std::cerr << "expectation" << std::endl;
+  std::cerr << "~~~~~~~~~~~" << std::endl;
+  typedef typename GMM::value_type::FeatureVector FeatureVector;
+  typename ImageType::SizeType radius;
+  radius.Fill(1); // 3x3 neighborhood
+  itk::NeighborhoodIterator<ImageType> it(radius, image, image->GetLargestPossibleRegion());
   size_t sample_i;
   float total_like = 0.f;
   for(sample_i=0, it.GoToBegin(); !it.IsAtEnd(); ++it,++sample_i)
@@ -211,10 +267,13 @@ float expectation( const typename ImageType::Pointer & image, const GMM & gmm, W
 template<class ImageType>
 float simple_expectation( const typename ImageType::Pointer & image, const GMM & gmm, WeightList & r )
 {
+  std::cerr << "~~~~~~~~~~~" << std::endl;
+  std::cerr << "simple_expectation" << std::endl;
+  std::cerr << "~~~~~~~~~~~" << std::endl;
   typedef typename GMM::value_type::FeatureVector FeatureVector;
-  typename ImageType::SizeType r;
-  r.Fill(1); // 3x3 neighborhood
-  itk::NeighborhoodIterator<ImageType> it(r, image, image->GetLargestPossibleRegion());
+  typename ImageType::SizeType radius;
+  radius.Fill(1); // 3x3 neighborhood
+  itk::NeighborhoodIterator<ImageType> it(radius, image, image->GetLargestPossibleRegion());
   size_t sample_i;
   float compactness = 0.f;
   for(sample_i=0, it.GoToBegin(); !it.IsAtEnd(); ++it,++sample_i)
