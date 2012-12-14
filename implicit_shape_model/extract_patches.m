@@ -6,7 +6,8 @@
 % radius - patch radius
 % return:
 % matrix where each row is a patch 
-function patches = extract_patches( images, radius )
+% and a matrix of corresponding patch locations
+function [patches, locations] = extract_patches( images, radius )
 
 addpath('external/keypointExtraction')
 
@@ -16,6 +17,7 @@ patchlength = side*side;
 n = max(size(images));
 
 patches = zeros(1,patchlength);
+locations = [];
 
 for i=1:n
   image = images{i};
@@ -35,6 +37,8 @@ for i=1:n
     patch = extract_patch( image, radius, keypoints(kpi,:) );
     patches(start_i+kpi,:) = patch(:);
   end
+
+  locations = [locations; keypoints];
 
 end
 
