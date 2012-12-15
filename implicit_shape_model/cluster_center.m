@@ -1,7 +1,7 @@
 % cluster_center - find the cluster center.. for now we
 %                  just use the mean patch.
 % params:
-% cluster - cluster list
+% cluster - the cluster
 % patches - patch data
 function center = cluster_center( cluster, patches )
 

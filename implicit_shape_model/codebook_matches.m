@@ -6,21 +6,23 @@
 %  alocation - the patch location.
 %  codebook - the codebook.
 %  threshold - the cluster threshold
+%  amount - amount to accumulate from codebook match
 % return:
 %  the hough accumulator
-function accum = codebook_matches( accum, apatch, alocation, codebook, threshold )
+function accum = codebook_matches( accum, apatch, alocation, codebook, threshold , amount )
 
 matches = [];
 
 for i=1:size(codebook,1)
   cluster_center = codebook{i,1};
-  if ngc(cluster_center, apatch) > threshold
+  correlation = ngc(cluster_center, apatch);
+  if correlation > threshold
     cb_locs = codebook{i,2};
     for j=1:size(cb_locs,1)
-      proposed_center = alocation + cb_locs(j,:);
-      inside = (proposed_center > [0 0]) && (proposed_center <= size(accum);
+      proposed_center = ceil(alocation + cb_locs(j,:));
+      inside = (proposed_center > [0 0]) .* (proposed_center <= size(accum));
       if inside
-        accum( proposed_center(1), proposed_center(2) ) = accum( proposed_center(1), proposed_center(2) ) + 1;
+        accum( proposed_center(1), proposed_center(2) ) = accum( proposed_center(1), proposed_center(2) ) + amount*(correlation-threshold);
       end
     end
   end

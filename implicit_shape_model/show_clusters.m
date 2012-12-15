@@ -32,7 +32,8 @@ for i=0:clusters_at_once:num_clusters
       cluster = clusters{i+j};
       K = min(samples_per_cluster,size(cluster,2));
       % center patch:
-      center = cluster_center( cluster, patches );
+      %center = cluster_center( cluster, patches );
+      center = cluster_center_frechet( cluster, patches );
       subplot(clusters_at_once, samples_per_cluster+1, (j-1)*(samples_per_cluster+1)+1)
       imshow( uint8(reshape(center,25,25)) )
       % first K patches:

@@ -18,7 +18,8 @@ for i=1:size(old_clusters,2)
   cluster = old_clusters{i};
   if size(cluster,2) > 1
     clusters{c} = cluster;
-    center = cluster_center( cluster, patches );
+    %center = cluster_center( cluster, patches );
+    center = cluster_center_frechet( cluster, patches );
     codebook{c,1} = center;
     codebook{c,2} = []; % will be list of locations
     c = c + 1;
