@@ -115,111 +115,97 @@ p {background: #ccc; padding: 9px; border-radius: 15px;}
 <div style="background: #ccc; padding: 9px; border-radius: 15px;">
 <b style="padding-top: 10px;">Code Description</b>
 <p>
-I've created a hough function that takes an edge image and the range of $\theta$ values, from the theta values it determines how large of an accumulator image is needed, for simplicity the resolution of the $\rho$ values are set to the same (accumulator is a square image).
+The code very much follows the process described in the paper (see especially section 3). Following the code in main.m will show the step by step process precisely, here I will simply summarize and describe any changes from what is described in the paper.
+</p>
+<p>
+The first "module" is the loading and preprocessing of the images.  For this project I've used exclusively the images from the UIUC Car Data Set, which is one of the main data sets shown in the paper.  The authors suggest resizing the images to a larger dimension, in order to use the same size patches, etc they did (25x25).
+<p>
+The preprocess_cars.m method does this exactly.. using an external resampling function that has cubic resampling already implemented, the script reads in all of the images, and resamples them into a higher resolution.  The results are saved to a .mat file for easy loading and processing in later stages.
+<p>
+After preprocessing, the first stage is patch extraction.  This is done in the extract_patches.m script.  Here another external module is used to extract the Harris keypoints.  I decied to use an external implementation, since the keypoint locator wasn't the point of the paper - and similar keypoint extraction methods could be substituted.
+Once the keypoints are found, the patches are extracted at each location and tucked away.  These patches are also saved off as a .mat file, for easy loading later.
+<p>
+Once the patches are extracted, an agglomerative clustering algorithm is run on the patches, to try to cluster similar, repeated freature from the training set together.  The paper is slightly vague on this point - there are many agglomerative algorithms.  The only other specification is that it's a bottom up clustering algorithm.  After researching some of the different methods, I decided to simply impelment a naive brute force agglomerative clustering method, found in agglomerative_cluster.m.  The approach is simple - initialize all the patches as their own cluster, then iteratively loop over all the clusters combining any that have a similarity score over a chosen threshold.  Continue this until the number of clusters stops changing (ie no more clusters are merging).
+<p>
+The threshold choice is done manually, by making a choice, running the clustering, and then increasing or decreasing the threshold to allow more patches to merge, or require a higher similarity score within a cluster (ie if members of a cluster are too different).
+<p>
+Once the clusters have been formed, we move on to codebook generation, via the create_codebook.m script.  Here we take each cluster with more than K members (clusters with fewer members most likely represent non-general features, we only want general features).  For this project I found K=3 to be a good threshold.  A cluster center is computed.  The paper gives no details on the center calculation.  For this project I've implemented two versions: cluster_center.m, which uses a simple statistical mean calculation; and cluster_center_frechet.m, which uses a Frechet-mean-like approach to finding the mean, by finding the member of the cluster that is most similar the rest of the cluster - the hope being that it will represent the cluster well.
+<p>
+I wasn't able to find a clear distinction on which center calculation was the best.  For now I assume the choice is arbitrary as long as it is reasonable.
+<p>
+After center calculation, the create_codebook.m script then runs the center over the training images, and notes where any matching locations are with respect to the center of the object.  This is the implicit shape model.
+<p>
+Once the codebook and implict shape model have been constructed, we can now apply our "learned" model to a test image.
+This is done using the Hough transform, as follows: the Harris keypoints are found in the test image, at each point (and some neighbors) a similarity test is run against each of the codebook centers, the there is a similarity greater than the original cluster threshold the the codebook is considered match, and the relative object center recorded in the implicit shape model learning step is used to mark a "proposed" object center.  This is repeated with all the Harris keypoints, with the hope that enough features will overlap object centers, revealing the location of the object.
+<p>
+The paper proposes using a continuous Hough space, and mean-shift mode estimation to find the peak.  There is also a substantial probability model built up around the similarity score, that is taken into consideration.  To simplify the scope of this project, I instead use a discrete Hough space and accumulator, and use a simple thresholding of the accumulator to find the maximum.  This is all done in the hough_coverage.m script.  I've written a simple show_test.m script that calls hough_coverage on a specified test image, and displays the original, the key point locations, the Hough accumulator, and the resulting maximum location. This makes it simple to manaully view location results.
+<p>
+In order to incorporate the negative examples from the training set without the explicit probability model, I cross check any positive matches to a codebook with all the negative codebooks, and if there is a higher correlation with one of those, I penalize the accumulation amount accordingly.
+<p>
+The paper goes on to describe an approach to then segmenting the located object, however to keep the project within a scope of a final project, I've decided to not implement that portion of the paper.
 
-The accumulator is generated by iterating over all $\theta$, and calculating $\rho=x cos \theta + y sin \theta$ for each x,y edge point.
-</p>
-<p>
-A second hough_decrement function was created to run a second "decrement" phase, as described in [1].
-</p>
-<p>
-I've made use of my previous edge detection and image smoothing code, as indicated above.  I've copied the edge detection and rescaling (for viewing) functions from the previous edge detection project.
-</p>
 </div>
 </div>
 <div id="section">
 <h3>EXAMPLES:</h3>
+<div style="background: #ccc; padding: 9px; border-radius: 15px;">
 <p>
 All images shown here are form the UIUC Car Data Set: <a href="http://cogcomp.cs.illinois.edu/Data/Car/">http://cogcomp.cs.illinois.edu/Data/Car/</a>.
+Note that the referenced paper used a modified subset of this data set, enhanced with additional examples. For the purposes of this project, I use the data set as is.
 </p>
+<p>
+The data set consists of 550 positive training images (car image centered), and 550 negative training images (just background).  The training images are all 100x40 pixels, they are all from normal outdoor photographs.
+</p>
+<p>
+There are also 170 test images that are also outdoor, normal photographs, but the cars may or may not be occluded, there can also be more than one car.  The cars in the test and training data sets are about the same scale.
+</p>
+</div>
 <table>
-<tr><td><img id="image" src="images/shapes.png"><br>Original</td><td></td></tr>
-<tr><td><img id="image" src="images/shapes_edge.png"><br>Edge map</td><td><img id="image" src="images/shapes_accum.png"><br>Accumulation image ($\theta$ on x-axis, $\rho$ on y-axis)</td></tr>
+  <tr><td colspan="2"><h3>Codebook</h3></td></tr>
+<tr><td colspan="2"><a href="images/cluster_sample.png"><img id="image" src="images/cluster_sample.png"></a><br>screen shot of samples from 5 of the clusters, centers computed using Frechet-like mean. (click to enlarge).</td></tr>
 <tr><td colspan="2">
     <p>
-    The above example shows the hough transform for a straight line applied to the edge map of the image with shapes above.  As you can see the accumulator image shows the curves in parameter space representing each of the points on the edge map.
-    <p>
-    We haven't done any thresholding to the edge map because it is already so clean.
+    The figure above shows a selection of 5 clusters from a codebook generated from 1000 patches.  This is a screenshot of one page of what teh show_clusters.m script shows. As you can see the clustering groups the most similar patches together.  The column on the far left are the cluster centers - which is used for the actual object location.  The figure above shows the cluster centers computed using cluster_center_frechet.m.
 </td></tr>
-<tr><td><img id="image" src="images/runway.png"><br>Original</td><td></td></tr>
-<tr><td><img id="image" src="images/runway_edge_orig.png"><br>Edge map</td><td><img id="image" src="images/runway_accum_orig.png"><br>Accumulation image ($\theta$ on x-axis, $\rho$ on y-axis)</td></tr>
-<tr><td><img id="image" src="images/runway_edge.png"><br>Edge map, with threshold set to 0.3*maximum.</td><td><img id="image" src="images/runway_accum.png"><br>Accumulation image ($\theta$ on x-axis, $\rho$ on y-axis)</td></tr>
+<tr><td colspan="2"><br><br></td></tr>
+<tr><td colspan="2"><a href="images/cluster_sample_statmean.png"><img id="image" src="images/cluster_sample.png"></a><br>Same 5 clusters but now with the statistical mean center. (click to enlarge).</td></tr>
 <tr><td colspan="2">
     <p>
-    Here we see the hough transform for a straight line applied to the edge map of the image with a runway shown above.  Again, the accumulator image shows the curves in parameter space representing each of the points on the edge map. Because this is a real photograph, the edge map has a lot more noise, which causes the accumulator curves to be much less distinct, the process also takes much longer to complete.
+    Above we show the same 5 clusters but with a statistical mean center in the far left column. As noted before, I didn't note any significant difference in performance of the two means, but the examples below are found using the Frechet-like mean.
     <p>
-    To address this problem, we threshold the edge map, to only get the more strong edges, and ignore the weak edges (which will also includes most of the noise). Here we threshold at 0.3*maximum edge value. The result is shown above, as you can see the majority of the runway edge data is still there, but most of the less useful edge and noise data have been removed.  The resulting accumulator image is also much more clean - the individual curves are now distinguishable.
+    The codebook is made in two steps - first the clustering algorithm clusters similar patches, then the codebook script finds the centers and locates the relative object centers.  It's important to note that the clustering algorithm can be quite slow.  Notes are in the main.m script, but for example to run the clustering on 10k patches takes about 40 minutes.  Running it on the entire UIUC Car Data set takes a day.  However I've saved the computed clusters and codebooks in a .mat file, included in the linked tar file.
 </td></tr>
-
-<tr><td colspan="2">
-<h3 style="padding-top: 15px;">Raw Accumulator</h3>
-</td></tr>
-<tr><td><img id="image" src="images/shapes_accum_points_0.9.png"><br>Maxima (red dots) detected using 0.9*maximum <br>value(dots have been enlarged). (6 maxima)</td><td><img id="image" src="images/shapes_lines_0.9.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.9*maximum).</td></tr>
-<tr><td><img id="image" src="images/shapes_accum_points_0.7.png"><br>Maxima (red dots) detected using 0.7*maximum value (47 maxima).</td><td><img id="image" src="images/shapes_lines_0.7.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.7*maximum)</td></tr>
-<tr><td colspan="2">
-    <p>The above maxima were found without any gaussian blurring of the accumulator, or decrementation.  These are just the maxima of the simple hough transform.  As you can see the process seems to capture the lines and edges pretty well.  If we turn the threshold on the accumulation image down to 0.7*maximum value even more edges are captured.
-</td></tr>
-<tr><td><img id="image" src="images/runway_accum_points_0.90.png"><br>Maxima (red dots) detected using 0.9*maximum <br>value(dots have been enlarged). (3 maxima)</td><td><img id="image" src="images/runway_lines_0.90.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.9*maximum).</td></tr>
-<tr><td><img id="image" src="images/runway_accum_points_0.50.png"><br>Maxima (red dots) detected using 0.5*maximum value (32 maxima).</td><td><img id="image" src="images/runway_lines_0.50.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.5*maximum)</td></tr>
+<tr><td colspan="2"><br><br><br></td></tr>
+<tr><td colspan="2"><h3>Locating Objects</h3></td></tr>
+<tr><td colspan="2"><a href="images/location_onegood_onebad.png"><img id="image" src="images/location_onegood_onebad.png"></a><br>screen shot of the result of location the object centers. Top is the original, 2nd shows the location of patches used (Harris keypoints), 3rd shows the rescaled Hough space accumulator, and bottom shows the located maxima. (click to enlarge).</td></tr>
 <tr><td colspan="2">
     <p>
-    Similarly, here we are finding the maximum on the raw accumulator without any smoothing or decrementing.  As the image shows we are able to capture the main verticle lines of the runway (which is encouraging, since those are the same lines found in the text book on p.737).  If we lower the threshold on the accumulator we are able to find more lines, including the diagonal runway edges, which is cool.
-</td></tr>
-
-<tr><td colspan="2">
-<h3 style="padding-top: 15px;">Gaussian Blurring on Accumulator</h3>
-</td></tr>
-<tr><td><img id="image" src="images/shapes_accum_blurred_points_0.95.png"><br>Maxima (red dots) detected using 0.95*maximum <br>value(dots have been enlarged). (4 maxima)</td><td><img id="image" src="images/shapes_blurred_lines_0.95.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.95*maximum)</td></tr>
-<tr><td><img id="image" src="images/shapes_accum_blurred_points_0.9.png"><br>Maxima (red dots) detected using 0.9*maximum value (26 maxima).</td><td><img id="image" src="images/shapes_blurred_lines_0.9.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.9*maximum)</td></tr>
-<tr><td colspan="2">
-    <p>The above maxima were found using gaussian blurring with $\sigma=1$ of the accumulator. With the blurring, more points were closer the the global maximum value (using .9*maximum as threshold still had 26 matches).  This makes sense, as the maximum has probably been lowered by the blurring, and other values may have been increased.
-</td></tr>
-<tr><td><img id="image" src="images/runway_accum_blurred_points_0.95.png"><br>Maxima (red dots) detected using 0.95*maximum <br>value(dots have been enlarged). (5 maxima)</td><td><img id="image" src="images/runway_blurred_lines_0.95.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.95*maximum)</td></tr>
-<tr><td><img id="image" src="images/runway_accum_blurred_points_0.9.png"><br>Maxima (red dots) detected using 0.9*maximum value (9 maxima).</td><td><img id="image" src="images/runway_blurred_lines_0.9.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.9*maximum)</td></tr>
-<tr><td colspan="2">
-    <p>Similarly, the above maxima were found using gaussian blurring with $\sigma=1$ of the accumulator. However one interesting difference is that the blurring doesn't seem to have as drastic an effect on the number of extrema found at the threshold.  In this case at 0.9*maximum found 5 instead of 3 (for the shapes image it changed from 6 to 26).
-</td></tr>
-
-<tr><td colspan="2">
-<h3 style="padding-top: 15px;">Decrementor on Accumulator</h3>
-</td></tr>
-<tr><td><img id="image" src="images/shapes_accum_decr_points_0.9.png"><br>Maxima (red dots) detected using 0.9*maximum <br>value(dots have been enlarged). (5 maxima)</td><td><img id="image" src="images/shapes_decr_lines_0.9.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.9*maximum)</td></tr>
-<tr><td><img id="image" src="images/shapes_accum_decr_points_0.7.png"><br>Maxima (red dots) detected using 0.7*maximum value (18 maxima).</td><td><img id="image" src="images/shapes_decr_lines_0.7.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.7*maximum)</td></tr>
-<tr><td colspan="2">
-    <p>These maxima were found using the decrementation approach described in the [1]. Decremenation does a great job of cleaning up the accumulator, now very few (maxima) points are left, which makes the maxima discovery much more straightforward.  The curves are no longer visible (decremented away), but the maxima are still available.
+    The above figure shows the results of locating an object in one of the test images.  The top image shows the original images, the next one down shows the location of the patches used (Harris keypoints), the thrid image shows the rescaled Hough accumulator, and the final image shows the maxima found using a threshold.
     <p>
-    The result above show taht we are able to again find more lines.  Some lines that weren't discovered in the raw or Gaussian approaches can now be discovered more easily.
+    You may have to click on the image and enlarge it to see the points in the location image. This is what the show_test.m script will display if you run it.  As you can see, the algorithm successfully located the car on the left.  It did not successfully locate the car on the right, and in fact has a false positive above the car on the right.  However, given the simplications I've imposed on the approach presented in the paper, I think it hasn't done a bad job.
 </td></tr>
-<tr><td><img id="image" src="images/runway_accum_decr_points_0.9.png"><br>Maxima (red dots) detected using 0.9*maximum <br>value(dots have been enlarged). (5 maxima)</td><td><img id="image" src="images/runway_decr_lines_0.9.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.9*maximum)</td></tr>
-<tr><td><img id="image" src="images/runway_accum_decr_points_0.7.png"><br>Maxima (red dots) detected using 0.7*maximum value (18 maxima).</td><td><img id="image" src="images/runway_decr_lines_0.7.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.7*maximum)</td></tr>
-<tr><td colspan="2">
-    <p> The story is very similar for this image.  The decrementation strategy really cleans up the accumulator and we are able to find the same vertical lines in the image.
-</td></tr>
-
-<tr><td colspan="2">
-<h3 style="padding-top: 15px;">Limit Accumulation using Edge Orientation</h3>
-</td></tr>
-<tr><td><img id="image" src="images/shapes_ori.png"><br>Orientation image.</td><td></td></tr>
-<tr><td><img id="image" src="images/shapes_accum_ori_points_0.9.png"><br>Maxima (red dots) detected using 0.9*maximum <br>value(dots have been enlarged). (5 maxima)</td><td><img id="image" src="images/shapes_ori_lines_0.9.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.9*maximum)</td></tr>
-<tr><td><img id="image" src="images/shapes_accum_ori_points_0.7.png"><br>Maxima (red dots) detected using 0.7*maximum value (23 maxima).</td><td><img id="image" src="images/shapes_ori_lines_0.7.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.7*maximum)</td></tr>
+<tr><td colspan="2"><a href="images/location_onegood_onefalse.png"><img id="image" src="images/location_onegood_onefalse.png"></a><br>screen shot of the result of location the object centers.(click to enlarge).</td></tr>
 <tr><td colspan="2">
     <p>
-    Another approach to speeding up the accumulation step is to limit the $\theta$ parameter using the edge orientation of the edge points.  The resulting accumulation image is shown above.  It's interesting to note that while we are limiting $\theta$ (x-axis) the most drastic/noticeable breaks in the curves is along the $\rho$ parameter (y-axis).
-    <p>
-    The approach appears successful, as you can see above the appropriate lines are detected again, but with much less computation.  If we lower the threshold we find additional lines like before. 
+    A similar story is shown here, the car is successfully located, however a false positive has alos been located.  This is most likely a result of the very simple technique of finding the maximum in the accumulator.  All I do here is threshold with 95% of the maximum value.  If a more sophisticated technique was applied, for example the mean-shift mode detection proposed in the paper, perhaps the false positive would go away.
 </td></tr>
-<tr><td><img id="image" src="images/runway_ori.png"><br>Orientation image.</td><td></td></tr>
-<tr><td><img id="image" src="images/runway_accum_ori_points_0.9.png"><br>Maxima (red dots) detected using 0.9*maximum <br>value(dots have been enlarged). (1 maxima)</td><td><img id="image" src="images/runway_ori_lines_0.9.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.9*maximum)</td></tr>
-<tr><td><img id="image" src="images/runway_accum_ori_points_0.7.png"><br>Maxima (red dots) detected using 0.7*maximum value (4 maxima).</td><td><img id="image" src="images/runway_ori_lines_0.7.png"><br>Lines corresponding to the maxima shown the left (threshold of 0.7*maximum)</td></tr>
+<tr><td colspan="2"><a href="images/location_twogood_onefalse.png"><img id="image" src="images/location_twogood_onefalse.png"></a><br>screen shot of the result of location the object centers.(click to enlarge).</td></tr>
 <tr><td colspan="2">
-    <p> 
-    The results for this image are very similar. We are able to compute the accumulator image very quickly, but the results are largely successful.  In this particular instance we only get one of the vertical edges.  
+    <p>
+    Here again we are able to successfully locate the car.  However we also again show another false positive.  Here again, a more sophisticated approach to Hough space peak location would probably go a long way. 
+    <p>
+    It's also interesting to note the Hough space.  In almost every case there are dominant horizontal and vertical lines criss-crossing the accumulator. One potential explanation, of which I'm fairly confident explains this artifact, is that the any pixels in a patch coming outside the image boundaries are black.  This means that most likely there are a few codebook entries that include features from the edges of the image (they would all be similar - some gry and a sharp edge of black).  They would also all have a fairly similar distance to the center of the car (because all training images are of uniform size).  Those edges codebook entries would match the edge of this image, and then add to the accumulator at that uniform distance to the center - resulting in the horizontal and vertical lines. One trivial way to circumvent this problem would be to reject any patches that lie on the edge.
 </td></tr>
-
-
-
 </table>
+<br><br><br>
 
+<div style="background: #ccc; padding: 9px; border-radius: 15px;">
+<h3>Conclusions:</h3>
+<p>
+While I wasn't able to implement all of the features discussed in this paper, this has been a very interesting project.  The approach of using an implicit shape model from various different feature vectors seems like a nice approach in general - assuming your target objects will be approximately the same size.  It would be interesting to investigate similar approaches that took into account scale invariance.
+<p>
+It was also interesting to learn about the many sub-problems included in this approach - for example the non-parametric agglomerative clustering itself is a long-standing problem with a few established approaches, but no clear winners.  Or the problem of posing the Hough accumulator as a continuous space using Mean-shift mode estimation.
+</div>
 </div>
 </body>
 </html>

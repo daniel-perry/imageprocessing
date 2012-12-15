@@ -26,8 +26,10 @@ for i=1:n
 
   for kpi=1:size(keypoints,1)
     pt_location = keypoints(kpi,:);
-    for r=pt_location(1)-(neighbor_radius*radius):radius/2:pt_location(1)+(neighbor_radius*radius)
-      for c=pt_location(2)-(neighbor_radius*radius):radius/2:pt_location(2)+(neighbor_radius*radius)
+    %for r=pt_location(1)-(neighbor_radius*radius):radius/2:pt_location(1)+(neighbor_radius*radius)
+    for r=pt_location(1):pt_location(1)
+      %for c=pt_location(2)-(neighbor_radius*radius):radius/2:pt_location(2)+(neighbor_radius*radius)
+      for c=pt_location(2):pt_location(2)
         if r > 0 && r <= size(image,1) && c >0 && c <= size(image,2)
           location = [r c];
           patch = extract_patch( image, radius, location );

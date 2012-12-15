@@ -20,7 +20,6 @@ n_patches = size(patches,1);
 for i=1:n_patches
   apatch = patches(i,:);
   alocation = locations(i,:);
-  accum = codebook_matches( accum, apatch, alocation, codebook_pos, threshold, 1 );
-  %accum = codebook_matches( accum, apatch, alocation, codebook_neg, threshold, -.25 );
+  accum = codebook_matches( accum, apatch, alocation, codebook_pos, codebook_neg, threshold, 1 );
 end
 

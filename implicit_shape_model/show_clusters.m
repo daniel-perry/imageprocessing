@@ -11,7 +11,7 @@ clusters = {};
 c = 1;
 for i=1:size(old_clusters,2)
   cluster = old_clusters{i};
-  if size(cluster,2) > 1
+  if size(cluster,2) > 3
     clusters{c} = cluster;
     c = c + 1;
   end

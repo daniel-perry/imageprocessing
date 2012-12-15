@@ -10,13 +10,12 @@ addpath('external/keypointExtraction')
 n = max(size(images));
 codebook = {};
 
-% threshold clusters to > 1 and generate centers
 old_clusters = clusters;
 clusters = {};
 c = 1;
 for i=1:size(old_clusters,2)
   cluster = old_clusters{i};
-  if size(cluster,2) > 1
+  if size(cluster,2) > 3 % bias towards larger clusters
     clusters{c} = cluster;
     %center = cluster_center( cluster, patches );
     center = cluster_center_frechet( cluster, patches );
