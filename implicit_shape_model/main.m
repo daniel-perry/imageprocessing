@@ -22,16 +22,16 @@ save 'patch_data.mat' train_pos_patches train_neg_patches test_patches
 load 'patch_data.mat' % train_pos_patches train_neg_patches test_patches
 
 cluster_thold = 15
-patch_count =  -1 % all patches - takes about 21 hrs each patch set 
-%patch_count = 1000  % clustering takes about 5 min each patch set, codebook generation takes 10 min for both.
+%patch_count =  -1 % all patches - takes about 21 hrs each patch set 
+patch_count = 1000  % clustering takes about 5 min each patch set, codebook generation takes 10 min for both.
 %patch_count = 10000 % takes about 45 min each patch set
 cluster_fn = 'clusters.mat'; % default
 if patch_count > 0
   cluster_fn = sprintf('clusters_%d_%d.mat',cluster_thold,patch_count)
-  codebook_fn = sprintf('codebook_%d_%d.mat',cluster_thold,patch_count)
+  codebook_fn = sprintf('codebook_fr_%d_%d.mat',cluster_thold,patch_count)
 else
   cluster_fn = sprintf('clusters_%d_all.mat',cluster_thold)
-  codebook_fn = sprintf('codebook_%d_all.mat',cluster_thold)
+  codebook_fn = sprintf('codebook_fr_%d_all.mat',cluster_thold)
 end
 
 %{
@@ -69,4 +69,5 @@ save(codebook_fn, 'codebook_pos', 'codebook_neg');
 
 %load(codebook_fn) % 'codebook_pos', 'codebook_neg' 
 
+%show_test( test_cars{1}, codebook_pos, codebook_neg, cluster_thold, radius )
 
