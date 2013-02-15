@@ -108,7 +108,7 @@ struct GaussianModel
   }
 };
 
-typedef std::vector< float > Weight;
+typedef std::vector< double > Weight;
 typedef std::vector< Weight > WeightList;
 typedef std::vector< GaussianModel<9> > GMM;
 
@@ -155,7 +155,7 @@ void maximization( const typename ImageType::Pointer & image, const WeightList &
     }
     for(size_t i=0; i<gmm.size(); ++i)
     {
-      gmm[i].mean += r[sample_i][i] * x;
+      gmm[i].mean += x * r[sample_i][i]; 
       gmm[i].mix += r[sample_i][i];
       mix_squared += r[sample_i][i]*r[sample_i][i];
     }
@@ -179,13 +179,9 @@ void maximization( const typename ImageType::Pointer & image, const WeightList &
   }
   for(size_t i=0; i<gmm.size(); ++i)
   {
-    std::cerr << "unnormalized covariance:" << std::endl;
-    std::cerr << gmm[i].covariance << std::endl;
-
     float norm_factor = 1/((1-mix_squared)*gmm[i].mix);
     std::cerr << "norm_factor: " << norm_factor << std::endl;
 
-    //gmm[i].covariance /= gmm[i].mix;
     gmm[i].covariance *= norm_factor;
     gmm[i].mix /= r.size();
     gmm[i].update_inv();
@@ -230,6 +226,8 @@ float expectation( const typename ImageType::Pointer & image, const GMM & gmm, W
 */
 
 // this version expects a logpdf
+// we try to avoid underflow, by following closely the approach here:
+// http://www.mathworks.com/matlabcentral/fileexchange/26184-em-algorithm-for-gaussian-mixture-model
 template<class ImageType>
 float expectation( const typename ImageType::Pointer & image, const GMM & gmm, WeightList & r )
 {
@@ -249,15 +247,21 @@ float expectation( const typename ImageType::Pointer & image, const GMM & gmm, W
     {
       x[i] = it.GetPixel(i);
     }
-    float sample_like = 0.f;
+    double max_logpdf = 0.f;
     for(size_t i=0; i<gmm.size(); ++i)
     {
-      r[sample_i][i] = gmm[i].mix * gmm[i].pdf(x);
-      sample_like += r[sample_i][i];
+      r[sample_i][i] = std::log(gmm[i].mix) + gmm[i].pdf(x);
+      if(r[sample_i][i] > max_logpdf ) max_logpdf = r[sample_i][i];
     }
+    double sample_like = 0.f;
     for(size_t i=0; i<gmm.size(); ++i)
     {
-      r[sample_i][i] /= sample_like;
+      sample_like += std::exp(static_cast<double>(r[sample_i][i]-max_logpdf));
+    }
+    sample_like = max_logpdf + std::log(sample_like);
+    for(size_t i=0; i<gmm.size(); ++i)
+    {
+      r[sample_i][i] -= sample_like;
     }
     total_like += sample_like;
   }

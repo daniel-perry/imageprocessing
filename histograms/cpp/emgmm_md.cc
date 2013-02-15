@@ -85,13 +85,18 @@ int main(int argc, char * argv[])
   for(iter=0; iter<iters; ++iter)
   {
     std::cerr << "i=" << iter << std::endl;
+
+    // M-step: model params
+    maximization<ImageType>( original, r, gmm );
     std::cerr << "model:" << std::endl;
     for(size_t i=0; i<gmm.size(); ++i)
       std::cerr << i << ": " << gmm[i].str() << std::endl;
-    maximization<ImageType>( original, r, gmm );
-    //log_like = expectation<ImageType>( original, gmm, r );
+
+    // E-step: weights
     log_like = simple_expectation<ImageType>( original, gmm, r );
     std::cerr << "compactness: " << log_like << std::endl;
+
+    // check for convergence
     if( fabs(old_log_like - log_like) < epsilon ) break;
     old_log_like = log_like;
   }
@@ -105,14 +110,19 @@ int main(int argc, char * argv[])
   // EM loop
   for(iter=0; iter<iters; ++iter)
   {
-    maximization<ImageType>( original, r, gmm );
     std::cerr << "i=" << iter << std::endl;
+
+    // M-step: model params
+    maximization<ImageType>( original, r, gmm );
     std::cerr << "model:" << std::endl;
     for(size_t i=0; i<gmm.size(); ++i)
       std::cerr << i << ": " << gmm[i].str() << std::endl;
 
+    // E-step: weights
     log_like = expectation<ImageType>( original, gmm, r );
     std::cerr << "log_like: " << log_like << std::endl;
+
+    // check convergence
     if( fabs(old_log_like - log_like) < epsilon ) break;
     old_log_like = log_like;
   }
