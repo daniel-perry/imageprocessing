@@ -5,8 +5,8 @@
  *  MIT license 
  * 
  *=========================================================================*/ 
-#ifndef TotalVariationFilter_h 
-#define TotalVariationFilter_h 
+#ifndef TotalVariationDualFilter_h 
+#define TotalVariationDualFilter_h 
 
 // itk includes
 #include "itkImage.h"
@@ -16,21 +16,21 @@
 namespace imageprocessing
 {
 /**
- * TotalVariationFilter
+ * TotalVariationDualFilter
  *  Implementation of total variation.  Initially done for 
  *  CS 7640 - Advanced Image Processing, Spring 2013, University of Utah
  */
 template< class TInputImage,
           class TOutputImage=TInputImage
         >
-class TotalVariationFilter:
+class TotalVariationDualFilter:
   public itk::ImageToImageFilter<TInputImage,TOutputImage>
 {
 public:
   /**
    * Standard class typedefs
    */
-  typedef TotalVariationFilter Self;
+  typedef TotalVariationDualFilter Self;
   typedef itk::ImageToImageFilter< TInputImage, TOutputImage > Superclass;
   typedef itk::SmartPointer< Self > Pointer;
   typedef itk::SmartPointer< const Self > ConstPointer;
@@ -42,58 +42,80 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(TotalVariationFilter, ImageToImageFilter);
+  itkTypeMacro(TotalVariationDualFilter, ImageToImageFilter);
 
   /** Image type typedef support. */
   typedef TInputImage InputImageType;
   typedef TOutputImage OutputImageType;
   typedef typename OutputImageType::RegionType OutputImageRegionType;
   typedef typename InputImageType::SizeType ImageSizeType;
+  typedef itk::Image<itk::Vector<float,InputImageType::ImageDimension>,InputImageType::ImageDimension> VectorImageType;
+  typedef typename VectorImageType::Pointer VectorImagePointer;
+  typedef typename VectorImageType::ConstPointer VectorImageConstPointer;
 
   /** 
-   * chambolle - whether to compute the TV using the
-   *   chambolle method, instead of primal/dual (default).
+   * Chambolle - whether to compute the TV using the
+   *   Chambolle method, instead of primal/dual (default).
    */
-  itkSetMacro(chambolle, bool);
-  itkGetConstMacro(chambolle, bool);
-  /**
-   * Step size for primal solution.
-   */
-  itkSetMacro(primalStepSize, float);
-  itkGetConstMacro(primalStepSize, float);
+  itkSetMacro(Chambolle, bool);
+  itkGetConstMacro(Chambolle, bool);
   /**
    * Step size for dual solution.
    */
-  itkSetMacro(dualStepSize, float);
-  itkGetConstMacro(dualStepSize, float);
+  itkSetMacro(DualStepSize, float);
+  itkGetConstMacro(DualStepSize, float);
+  /**
+   * Normalizing parameter - makes it less sensitive to step sizes.
+   */
+  itkSetMacro(Lambda, float);
+  itkGetConstMacro(Lambda, float);
+  /**
+   * Delta - the change in solution after running.
+   */
+  itkSetMacro(Delta, float);
+  itkGetConstMacro(Delta, float);
+
+  /**
+   * X - the unit vector dual image
+   */
+  itkSetMacro(X, VectorImagePointer)
+  itkGetMacro(X, VectorImagePointer)
 
 protected:
-  TotalVariationFilter()
-  :m_chambolle(false),
-  m_primalStepSize(1),
-  m_dualStepSize(1)
+  TotalVariationDualFilter()
+  :m_Chambolle(false),
+  m_DualStepSize(1),
+  m_Lambda(1),
+  m_Delta(10e10),
+  m_X()
   {}
 
-  virtual ~TotalVariationFilter(){}
+  virtual ~TotalVariationDualFilter(){}
   void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
   /**
-   * Standard parallel pipeline method
+   * Standard parallel pipeline methods
    */
+  void AllocateOutputs();
   void BeforeThreadedGenerateData();
   void ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                               itk::ThreadIdType threadId);
 
 private:
-  TotalVariationFilter(const Self &); // not allowed
+  TotalVariationDualFilter(const Self &); // not allowed
   void operator=(const Self &); // not allowed 
 
-  bool m_chambolle;
-  float m_primalStepSize;
-  float m_dualStepSize;
+  bool m_Chambolle;
+  float m_DualStepSize;
+  float m_Lambda;
+  float m_Delta;
+
+  std::vector<float> m_Deltas; // per thread
+
+  typename VectorImageType::Pointer m_X; // dual unit gradient image.
 };
 } // end namespace itk
 
-#include "TotalVariationFilter.hxx"
+#include "TotalVariationDualFilter.hxx"
 
 #endif

@@ -24,8 +24,14 @@ SET( tv_SRCS
 )
 
 SET( tv_HDRS
-  TotalVariationFilter.h
-  TotalVariationFilter.hxx
+  TotalVariationPrimalFilter.h
+  TotalVariationPrimalFilter.hxx
+  TotalVariationDualFilter.h
+  TotalVariationDualFilter.hxx
+  TotalVariationImageFilter.h
+  TotalVariationImageFilter.hxx
+  UnitGradientFilter.h
+  UnitGradientFilter.hxx
 )
 
 ADD_EXECUTABLE( tv
