@@ -1,3 +1,10 @@
+#========================================================================= 
+# 
+#  Copyright (c) 2013 Daniel Perry 
+# 
+#  MIT license 
+# 
+#==========================================================================
 
 PROJECT( nonlinear_deblurring )
 cmake_minimum_required(VERSION 2.8)  
@@ -40,6 +47,24 @@ ADD_EXECUTABLE( tv
 				      )
 
 TARGET_LINK_LIBRARIES(  tv
+                        ${ITK_LIBRARIES}
+                     ) 
+
+# toy_data
+SET( toy_data_SRCS
+     toy_data.cc
+)
+
+SET( toy_data_HDRS
+  normal_dist.h
+)
+
+ADD_EXECUTABLE( toy_data
+                ${toy_data_SRCS}
+                ${toy_data_HDRS}
+				      )
+
+TARGET_LINK_LIBRARIES(  toy_data
                         ${ITK_LIBRARIES}
                      ) 
 
