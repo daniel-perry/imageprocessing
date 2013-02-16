@@ -31,12 +31,12 @@ public:
    * Standard class typedefs
    */
   typedef TotalVariationFilter Self;
-  typedef itk::ImageToImageFilter< TImageType, TImageType > Superclass;
+  typedef itk::ImageToImageFilter< TInputImage, TOutputImage > Superclass;
   typedef itk::SmartPointer< Self > Pointer;
   typedef itk::SmartPointer< const Self > ConstPointer;
 
   itkStaticConstMacro(ImageDimension, unsigned int,
-                      TImageType::ImageDimension);
+                      TInputImage::ImageDimension);
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -48,7 +48,7 @@ public:
   typedef TInputImage InputImageType;
   typedef TOutputImage OutputImageType;
   typedef typename OutputImageType::RegionType OutputImageRegionType;
-  typedef typename InputImageTyp::SizeType ImageSizeType;
+  typedef typename InputImageType::SizeType ImageSizeType;
 
   /** 
    * chambolle - whether to compute the TV using the
@@ -63,7 +63,7 @@ protected:
   {}
 
   virtual ~TotalVariationFilter(){}
-  void PrintSelf(std::ostream & os, Indent indent) const;
+  void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
   /**
    * Standard parallel pipeline method

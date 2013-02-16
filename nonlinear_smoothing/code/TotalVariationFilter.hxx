@@ -9,8 +9,8 @@
 #ifndef TotalVariationFilter_hxx
 #define TotalVariationFilter_hxx
 
-#include "itkConstNeighborhoodIterator.h"
-#include "itkNeighborhoodAlgorithm.h"
+#include "itkImageRegionConstIterator.h"
+#include "itkImageRegionIterator.h"
 #include "itkProgressReporter.h"
 
 namespace imageprocessing
@@ -34,7 +34,7 @@ TotalVariationFilter< TInputImage, TOutputImage >
   typename InputImageType::ConstPointer input = this->GetInput();
   typename OutputImageType::Pointer output = this->GetOutput();
   
-  typedef itk::ImageRegionConstIterator<InputImageType> it(input, outputRegionForThread);
+  itk::ImageRegionConstIterator<InputImageType> it(input, outputRegionForThread);
   for(it.GoToBegin(); !it.IsAtEnd(); ++it)
   {
   }
@@ -43,7 +43,7 @@ TotalVariationFilter< TInputImage, TOutputImage >
 template< class TInputImage, class TOutputImage >
 void
 TotalVariationFilter< TInputImage, TOutputImage >
-::PrintSelf(std::ostream & os, Indent indent) const
+::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
   os << "chambolle: " << m_chambolle << std::endl;
