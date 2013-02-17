@@ -87,7 +87,10 @@ public:
    */
   itkSetMacro(ThreadCount, size_t);
   itkGetConstMacro(ThreadCount, size_t);
-  virtual void SetNumberOfThreads(size_t numThreads){ m_ThreadCount = numThreads; }
+  virtual void SetNumberOfThreads(size_t numThreads){ 
+    m_ThreadCount = numThreads; 
+    this->Superclass::SetNumberOfThreads(numThreads);
+  }
 
 protected:
   TotalVariationImageFilter()

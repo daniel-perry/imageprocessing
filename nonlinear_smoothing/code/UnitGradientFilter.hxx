@@ -61,7 +61,9 @@ UnitGradientFilter< TInputImage, TOutputImage >
         grad[i] = input->GetPixel(overOne) - it.Get();
       }
     }
-    grad = grad / grad.GetNorm();
+    float norm = grad.GetNorm();
+    if( norm > itk::NumericTraits<float>::min() )
+      grad = grad / grad.GetNorm();
     output->SetPixel( out.GetIndex(), grad );
   }
 }

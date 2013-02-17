@@ -27,7 +27,10 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
 {
   //typename InputImageType::ConstPointer input = this->GetInput();
   //typename OutputImageType::Pointer output = this->GetOutput();
-  m_Deltas.resize( this->GetNumberOfThreads() );
+  if(m_Deltas.size() != this->GetNumberOfThreads())
+    m_Deltas.resize( this->GetNumberOfThreads() );
+  for(size_t i=0; i<m_Deltas.size(); ++i)
+    m_Deltas[i] = 0;
 }
 
 template< class TInputImage, class TOutputImage >
@@ -73,11 +76,40 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
     ///////////////////////
     // Primal Step:
     PixelType y = it.Get();
+    PixelType tmp = y;
+    /*
+    { // debug
+    std::cerr << center << ": " <<std::endl;
+    std::cerr << "y = (1-"<<m_PrimalStepSize<<") * "<<y<<" + "<<m_PrimalStepSize<<" * ("<<originalIt.Get()<<" - (1/"<<m_Lambda<<") * "<<div<<")"<<std::endl<<"  = ";
+    }
+    */
     y = (1-m_PrimalStepSize) * y + m_PrimalStepSize * (originalIt.Get() - (1/m_Lambda) * div);
+    if(std::isnan(y))
+    {
+      throw itk::ExceptionObject("NaN detected in Primal step");
+    }
+    /*
+    { //debug
+    std::cerr << y << std::endl;
+    }
+    */
 
     output->SetPixel( it.GetIndex(), y ); // save result
+    m_Deltas[threadId] += fabs(tmp-y);
   }
 }
+
+template< class TInputImage, class TOutputImage >
+void
+TotalVariationPrimalFilter< TInputImage, TOutputImage >
+::AfterThreadedGenerateData()
+{
+  m_Delta = 0;
+  for(size_t i=0; i<m_Deltas.size(); ++i)
+    m_Delta += m_Deltas[i];
+}
+
+
 
 template< class TInputImage, class TOutputImage >
 void

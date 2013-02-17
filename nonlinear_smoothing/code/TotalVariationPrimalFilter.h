@@ -47,6 +47,7 @@ public:
   /** Image type typedef support. */
   typedef TInputImage InputImageType;
   typedef typename InputImageType::ConstPointer InputImageConstPointer;
+  typedef typename InputImageType::Pointer InputImagePointer;
   typedef TOutputImage OutputImageType;
   typedef typename OutputImageType::RegionType OutputImageRegionType;
   typedef typename InputImageType::SizeType ImageSizeType;
@@ -85,8 +86,8 @@ public:
   /**
    * OriginalImage - the original image.
    */
-  itkSetMacro(OriginalImage, InputImageConstPointer)
-  itkGetMacro(OriginalImage, InputImageConstPointer)
+  itkSetMacro(OriginalImage, InputImagePointer)
+  itkGetMacro(OriginalImage, InputImagePointer)
 
 
 protected:
@@ -108,6 +109,7 @@ protected:
   void BeforeThreadedGenerateData();
   void ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                               itk::ThreadIdType threadId);
+  void AfterThreadedGenerateData();
 
 private:
   TotalVariationPrimalFilter(const Self &); // not allowed
@@ -121,7 +123,7 @@ private:
   std::vector<float> m_Deltas; // per thread
 
   VectorImagePointer m_X; // dual unit gradient image.
-  InputImageConstPointer m_OriginalImage;
+  InputImagePointer m_OriginalImage;
 };
 } // end namespace itk
 

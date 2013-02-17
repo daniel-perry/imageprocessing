@@ -109,10 +109,23 @@ TotalVariationDualFilter< TInputImage, TOutputImage >
     {
       if(max < fabs(x[i])) max = fabs(x[i]);
     }
-    if( max > itk::NumericTraits<typename GradientType::ComponentType>::min() )
+    if( max > 1 )
     {
       x /= max;
     }
+    for(size_t i=0; i<x.Size(); ++i)
+    {
+      if(std::isnan(x[i])) 
+      {
+        throw itk::ExceptionObject("NaN detected in Dual step");
+      }
+    }
+
+    /*
+    {//debug
+    std::cerr << center << ": " << x << " (" << x.GetNorm() << ")" << std::endl;
+    }
+    */
 
     m_X->SetPixel( gradIt.GetIndex(), x ); // save result
   }

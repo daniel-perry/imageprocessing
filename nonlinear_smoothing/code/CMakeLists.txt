@@ -39,6 +39,7 @@ SET( tv_HDRS
   TotalVariationImageFilter.hxx
   UnitGradientFilter.h
   UnitGradientFilter.hxx
+  DeepCopy.h
 )
 
 ADD_EXECUTABLE( tv

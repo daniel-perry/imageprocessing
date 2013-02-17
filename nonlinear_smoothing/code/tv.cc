@@ -9,6 +9,7 @@
 // itk includes
 #include "itkImage.h"
 #include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
 
 // local includes
 #include "TotalVariationImageFilter.h"
@@ -18,23 +19,25 @@ int main(int argc, char * argv[] )
 {
   if(argc < 2)
   {
-    std::cerr << "usage: " << argv[0] << " [image.png] [lambda] [primal-step] [dual-step] <chambolle-flag>" << std::endl;
+    std::cerr << "usage: " << argv[0] << " <in.png> <out.png> <lambda> <primal-step> <dual-step> <iters> [chambolle-flag]" << std::endl;
     std::cerr << "note: chambolle-flag=1 means use chambolled instead of primal-dual" << std::endl;
     return 1;
   }
 
   std::string input_fn = argv[1];
-  float lambda = atof(argv[2]);
-  float primalStep = atof(argv[3]);
-  float dualStep = atof(argv[4]);
+  std::string output_fn = argv[2];
+  float lambda = atof(argv[3]);
+  float primalStep = atof(argv[4]);
+  float dualStep = atof(argv[5]);
+  size_t iters = atoi(argv[6]);
   bool chambolleFlag = 0;
-  if(argc > 5)
+  if(argc > 7)
   {
-    chambolleFlag = atoi(argv[5]) == 1;
+    chambolleFlag = atoi(argv[7]) == 1;
   }
 
   const size_t Dimension = 2;
-  typedef float PixelType;
+  typedef unsigned char PixelType;
   typedef itk::Image<PixelType,Dimension> ImageType;
 
   // read in images:
@@ -58,7 +61,7 @@ int main(int argc, char * argv[] )
   tv->SetLambda(lambda);
   tv->SetPrimalStepSize(primalStep);
   tv->SetDualStepSize(dualStep);
-  tv->SetMaxIters(10);
+  tv->SetMaxIters(iters);
   tv->SetInput(input);
   ImageType::Pointer output = tv->GetOutput();
   try
@@ -69,6 +72,21 @@ int main(int argc, char * argv[] )
   {
     std::cerr << "Error running TV filter :" << e << std::endl;
     return 1;
+  }
+
+  typedef itk::ImageFileWriter< ImageType > WriterType;
+  WriterType::Pointer writer = WriterType::New();
+  writer->SetInput( output );
+  writer->SetFileName( output_fn );
+  writer->UseCompressionOn();
+
+  try
+  {
+    writer->Update();
+  }
+  catch(itk::ExceptionObject e)
+  {
+    std::cerr << "Error writing file " << output_fn << ": " << e << std::endl;
   }
 
   return 0;

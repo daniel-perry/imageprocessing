@@ -18,6 +18,7 @@
 #include "UnitGradientFilter.h"
 #include "TotalVariationPrimalFilter.h"
 #include "TotalVariationDualFilter.h"
+#include "DeepCopy.h"
 
 namespace imageprocessing
 {
@@ -29,11 +30,15 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
 {
   typename InputImageType::ConstPointer input = this->GetInput();
 
-  typedef UnitGradientFilter<InputImageType> GradFilter;
+  typedef itk::Image<float,InputImageType::ImageDimension> InternalImageType;
+  typename InternalImageType::Pointer internal = InternalImageType::New();
+  DeepCopy<InputImageType,InternalImageType>(input,internal);
+
+  typedef UnitGradientFilter<InternalImageType> GradFilter;
   typedef typename GradFilter::OutputImageType VectorImageType;
   typename GradFilter::Pointer gradFilter = GradFilter::New();
   if(GetThreadCount()>0) gradFilter->SetNumberOfThreads(GetThreadCount());
-  gradFilter->SetInput(input);
+  gradFilter->SetInput(internal);
   typename VectorImageType::Pointer gradImage = gradFilter->GetOutput();
   try
   {
@@ -45,35 +50,35 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
     return;
   }
 
-  typedef TotalVariationDualFilter<TInputImage,TOutputImage> DualFilter;
+  typedef TotalVariationDualFilter<InternalImageType> DualFilter;
   typename DualFilter::Pointer dualFilter = DualFilter::New();
   dualFilter->SetChambolle(this->GetChambolle());
   dualFilter->SetDualStepSize(this->GetDualStepSize());
   dualFilter->SetLambda(this->GetLambda());
   dualFilter->SetX(gradImage);
-  dualFilter->SetInput(input);
+  dualFilter->SetInput(internal);
 
-  typedef TotalVariationPrimalFilter<TInputImage,TOutputImage> PrimalFilter;
+  typedef TotalVariationPrimalFilter<InternalImageType> PrimalFilter;
   typename PrimalFilter::Pointer primalFilter = PrimalFilter::New();
   primalFilter->SetChambolle(this->GetChambolle());
   primalFilter->SetPrimalStepSize(this->GetPrimalStepSize());
   primalFilter->SetLambda(this->GetLambda());
-  primalFilter->SetInput(input);
-  primalFilter->SetOriginalImage(input);
+  primalFilter->SetInput(internal);
+  primalFilter->SetOriginalImage(internal);
 
 
-  typename OutputImageType::Pointer filterOutput;
+  typename InternalImageType::Pointer filterOutput;
   float delta = itk::NumericTraits<float>::max();
-  float epsilon = itk::NumericTraits<float>::min() * 10e3;
+  float epsilon = 0.001; //itk::NumericTraits<float>::min() * 10e3;
   size_t pixels = 1;
   typename InputImageType::SizeType size = input->GetLargestPossibleRegion().GetSize();
   for(size_t i=0; i<InputImageType::ImageDimension; ++i)
   {
     pixels *= size[i];
   }
-  size_t iters;
-  for(iters=0; iters<GetMaxIters(); ++iters)
+  for(m_Iters=0; m_Iters<GetMaxIters(); ++m_Iters)
   {
+    std::cerr << m_Iters << ": " << std::endl;
     dualFilter->Modified(); // force to run
     try
     {
@@ -81,12 +86,24 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
     }
     catch(itk::ExceptionObject e)
     {
-      std::cerr << "error running total variation filter: " << e << std::endl;
+      std::cerr << "error running dual filter: " << e << std::endl;
       return;
     }
+    primalFilter->Modified(); // force to run
     primalFilter->SetX(dualFilter->GetX());
+    try
+    {
+      primalFilter->Update();
+    }
+    catch(itk::ExceptionObject e)
+    {
+      std::cerr << "error running primal filter: " << e << std::endl;
+      return;
+    }
     filterOutput = primalFilter->GetOutput();
     delta = primalFilter->GetDelta();
+
+    std::cerr << "delta: " << delta << std::endl;
 
     // check convergence
     if(delta < epsilon*pixels)
@@ -99,9 +116,9 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
     dualFilter->SetInput(filterOutput);
     primalFilter->SetInput(filterOutput);
   }
-  if(iters < GetMaxIters())
+  if(m_Iters < m_MaxIters)
   {
-    std::cerr << "converged!" << std::endl;
+    std::cerr << "converged in " << m_Iters << " iterations." << std::endl;
   }
   else
   {
@@ -110,12 +127,17 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
 
   // set output to be tv filter output
   typename OutputImageType::Pointer output = this->GetOutput();
+  output->SetRegions(input->GetLargestPossibleRegion());
+  output->Allocate();
+  DeepCopy<InternalImageType,OutputImageType>(filterOutput,output); // need to convert to unsigned char.
+  /*
   output->SetOrigin(filterOutput->GetOrigin());
   output->SetSpacing(filterOutput->GetSpacing());
   output->SetLargestPossibleRegion(filterOutput->GetLargestPossibleRegion());
   output->SetBufferedRegion(filterOutput->GetBufferedRegion());
   output->SetRequestedRegion(filterOutput->GetRequestedRegion());
   output->SetPixelContainer(filterOutput->GetPixelContainer());
+  */
 }
 
 template< class TInputImage, class TOutputImage >
