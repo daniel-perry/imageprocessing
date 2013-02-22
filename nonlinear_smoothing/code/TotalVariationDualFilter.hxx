@@ -93,7 +93,7 @@ TotalVariationDualFilter< TInputImage, TOutputImage >
       else
       {
         IndexType overOne = center;
-        overOne[i] += 1;
+        overOne[i] -= 1;
         grad[i] = input->GetPixel(overOne) - it.Get();
       }
     }
@@ -104,14 +104,13 @@ TotalVariationDualFilter< TInputImage, TOutputImage >
     x = x + m_DualStepSize * m_Lambda * grad;
 
     // project onto X (see Remark 2 on p. 10)
-    typename GradientType::ComponentType max=0;
     for(size_t i=0; i<x.Size(); ++i)
     {
-      if(max < fabs(x[i])) max = fabs(x[i]);
-    }
-    if( max > 1 )
-    {
-      x /= max;
+      typename GradientType::ComponentType den=fabs(x[i]);
+      if( den > 1 )
+      {
+        x[i] /= den;
+      }
     }
     for(size_t i=0; i<x.Size(); ++i)
     {

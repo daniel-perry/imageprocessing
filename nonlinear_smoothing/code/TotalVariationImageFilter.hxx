@@ -57,6 +57,7 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
   dualFilter->SetLambda(this->GetLambda());
   dualFilter->SetX(gradImage);
   dualFilter->SetInput(internal);
+  dualFilter->SetNumberOfThreads(1);
 
   typedef TotalVariationPrimalFilter<InternalImageType> PrimalFilter;
   typename PrimalFilter::Pointer primalFilter = PrimalFilter::New();
@@ -65,7 +66,7 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
   primalFilter->SetLambda(this->GetLambda());
   primalFilter->SetInput(internal);
   primalFilter->SetOriginalImage(internal);
-
+  primalFilter->SetNumberOfThreads(1);
 
   typename InternalImageType::Pointer filterOutput;
   float delta = itk::NumericTraits<float>::max();
@@ -112,9 +113,14 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
     }
     
     // update steps sizes
+    size_t k=m_Iters+1;
+    float tau = 0.2 + 0.08 * k;
+    float theta = (0.5 - (5/(15+k)))/tau;
     
     dualFilter->SetInput(filterOutput);
+    dualFilter->SetDualStepSize(tau);
     primalFilter->SetInput(filterOutput);
+    primalFilter->SetPrimalStepSize(theta);
   }
   if(m_Iters < m_MaxIters)
   {
