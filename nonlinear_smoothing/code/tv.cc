@@ -19,7 +19,7 @@ int main(int argc, char * argv[] )
 {
   if(argc < 2)
   {
-    std::cerr << "usage: " << argv[0] << " <in.png> <out.png> <lambda> <primal-step> <dual-step> <iters> [chambolle-flag]" << std::endl;
+    std::cerr << "usage: " << argv[0] << " <in.png> <out.png> <lambda> <dual-step> <iters> [chambolle-flag]" << std::endl;
     std::cerr << "note: chambolle-flag=1 means use chambolled instead of primal-dual" << std::endl;
     return 1;
   }
@@ -27,13 +27,12 @@ int main(int argc, char * argv[] )
   std::string input_fn = argv[1];
   std::string output_fn = argv[2];
   float lambda = atof(argv[3]);
-  float primalStep = atof(argv[4]);
-  float dualStep = atof(argv[5]);
-  size_t iters = atoi(argv[6]);
+  float dualStep = atof(argv[4]);
+  size_t iters = atoi(argv[5]);
   bool chambolleFlag = 0;
-  if(argc > 7)
+  if(argc > 6)
   {
-    chambolleFlag = atoi(argv[7]) == 1;
+    chambolleFlag = atoi(argv[6]) == 1;
   }
 
   const size_t Dimension = 2;
@@ -59,7 +58,6 @@ int main(int argc, char * argv[] )
   typedef TotalVariationImageFilter<ImageType> TVFilter;
   TVFilter::Pointer tv = TVFilter::New();
   tv->SetLambda(lambda);
-  tv->SetPrimalStepSize(primalStep);
   tv->SetDualStepSize(dualStep);
   tv->SetMaxIters(iters);
   tv->SetInput(input);

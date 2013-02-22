@@ -53,7 +53,6 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
   typedef TotalVariationDualFilter<InternalImageType> DualFilter;
   typename DualFilter::Pointer dualFilter = DualFilter::New();
   dualFilter->SetChambolle(this->GetChambolle());
-  dualFilter->SetDualStepSize(this->GetDualStepSize());
   dualFilter->SetLambda(this->GetLambda());
   dualFilter->SetX(gradImage);
   dualFilter->SetInput(internal);
@@ -62,7 +61,6 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
   typedef TotalVariationPrimalFilter<InternalImageType> PrimalFilter;
   typename PrimalFilter::Pointer primalFilter = PrimalFilter::New();
   primalFilter->SetChambolle(this->GetChambolle());
-  primalFilter->SetPrimalStepSize(this->GetPrimalStepSize());
   primalFilter->SetLambda(this->GetLambda());
   primalFilter->SetInput(internal);
   primalFilter->SetOriginalImage(internal);
@@ -80,9 +78,17 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
   for(m_Iters=0; m_Iters<GetMaxIters(); ++m_Iters)
   {
     std::cerr << m_Iters << ": " << std::endl;
+
+    // update steps sizes
+    float tau = GetDualStepSize() + 0.08 * m_Iters;
+    float theta = (0.5 - (5/(15+m_Iters)))/tau;
+ 
     dualFilter->Modified(); // force to run
+    dualFilter->SetDualStepSize(tau);
+    if(m_Iters>0) dualFilter->SetInput(filterOutput);
     try
     {
+      std::cerr << "running dual.." << std::endl;
       dualFilter->Update();
     }
     catch(itk::ExceptionObject e)
@@ -91,9 +97,12 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
       return;
     }
     primalFilter->Modified(); // force to run
+    primalFilter->SetPrimalStepSize(theta);
     primalFilter->SetX(dualFilter->GetX());
+    if(m_Iters>0) primalFilter->SetInput(filterOutput);
     try
     {
+      std::cerr << "running primal.." << std::endl;
       primalFilter->Update();
     }
     catch(itk::ExceptionObject e)
@@ -111,16 +120,6 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
     {
       break;
     }
-    
-    // update steps sizes
-    size_t k=m_Iters+1;
-    float tau = 0.2 + 0.08 * k;
-    float theta = (0.5 - (5/(15+k)))/tau;
-    
-    dualFilter->SetInput(filterOutput);
-    dualFilter->SetDualStepSize(tau);
-    primalFilter->SetInput(filterOutput);
-    primalFilter->SetPrimalStepSize(theta);
   }
   if(m_Iters < m_MaxIters)
   {
@@ -131,12 +130,20 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
     std::cerr << "warning: iters exceeded max iters, did not converge." << std::endl;
   }
 
-  // set output to be tv filter output
+  { // debug
+    typedef itk::ImageFileWriter<InternalImageType> TmpWriter;
+    typename TmpWriter::Pointer tmpwriter = TmpWriter::New();
+    tmpwriter->SetInput(filterOutput);
+    tmpwriter->SetFileName("tmp_filterout.nrrd");
+    tmpwriter->Update();
+  }
+
   typename OutputImageType::Pointer output = this->GetOutput();
   output->SetRegions(input->GetLargestPossibleRegion());
   output->Allocate();
   DeepCopy<InternalImageType,OutputImageType>(filterOutput,output); // need to convert to unsigned char.
   /*
+  // set output to be tv filter output
   output->SetOrigin(filterOutput->GetOrigin());
   output->SetSpacing(filterOutput->GetSpacing());
   output->SetLargestPossibleRegion(filterOutput->GetLargestPossibleRegion());

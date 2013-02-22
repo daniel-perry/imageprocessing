@@ -93,14 +93,16 @@ TotalVariationDualFilter< TInputImage, TOutputImage >
       else
       {
         IndexType overOne = center;
-        overOne[i] -= 1;
+        overOne[i] += 1;
         grad[i] = input->GetPixel(overOne) - it.Get();
       }
     }
+    grad = -grad;
 
     ///////////////////////
     // Dual Step:
     GradientType x = gradIt.Get();
+    //std::cerr << "dual coefficient: " << m_DualStepSize * m_Lambda << std::endl; // debug
     x = x + m_DualStepSize * m_Lambda * grad;
 
     // project onto X (see Remark 2 on p. 10)

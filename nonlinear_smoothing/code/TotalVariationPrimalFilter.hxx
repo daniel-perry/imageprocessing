@@ -58,7 +58,7 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
   {
     ////////////////////////////////////
     // compute divergence on current X:
-    PixelType div;
+    PixelType div = 0;
     IndexType center = it.GetIndex();
     GradientType gradCenter = gradIt.Get();
     for(size_t i=0; i<gradCenter.Size(); ++i)
@@ -66,12 +66,13 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
       if(!(center[i] == 0 || center[i] == size[i]-1)) // not on edge
       {
         IndexType overOne = center;
-        overOne[i] += 1;
+        overOne[i] -= 1;
 
         GradientType gradOverOne = m_X->GetPixel(overOne);
         div += gradOverOne[i] - gradCenter[i];
       }
     }
+    div = -div; // we want the negative divergence
 
     ///////////////////////
     // Primal Step:
@@ -82,6 +83,7 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
     std::cerr << center << ": " <<std::endl;
     std::cerr << "y = (1-"<<m_PrimalStepSize<<") * "<<y<<" + "<<m_PrimalStepSize<<" * ("<<originalIt.Get()<<" - (1/"<<m_Lambda<<") * "<<div<<")"<<std::endl<<"  = ";
     }
+    std::cerr << "primal coefficients: " << m_PrimalStepSize << " , " << (1/m_Lambda) << std::endl;
     */
     y = (1-m_PrimalStepSize) * y + m_PrimalStepSize * (originalIt.Get() - (1/m_Lambda) * div);
     if(std::isnan(y))
@@ -93,6 +95,9 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
     std::cerr << y << std::endl;
     }
     */
+
+    //////////////////////
+    // Convergence criteria
 
     output->SetPixel( it.GetIndex(), y ); // save result
     m_Deltas[threadId] += fabs(tmp-y);

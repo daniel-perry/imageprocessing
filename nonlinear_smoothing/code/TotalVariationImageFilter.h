@@ -57,11 +57,6 @@ public:
   itkSetMacro(Chambolle, bool);
   itkGetConstMacro(Chambolle, bool);
   /**
-   * Step size for primal solution.
-   */
-  itkSetMacro(PrimalStepSize, float);
-  itkGetConstMacro(PrimalStepSize, float);
-  /**
    * Step size for dual solution.
    */
   itkSetMacro(DualStepSize, float);
@@ -95,7 +90,6 @@ public:
 protected:
   TotalVariationImageFilter()
   :m_Chambolle(false),
-  m_PrimalStepSize(1),
   m_DualStepSize(1),
   m_Lambda(1),
   m_MaxIters(100),
@@ -113,7 +107,6 @@ private:
   void operator=(const Self &); // not allowed 
 
   bool m_Chambolle;
-  float m_PrimalStepSize;
   float m_DualStepSize;
   float m_Lambda;
   size_t m_MaxIters;
