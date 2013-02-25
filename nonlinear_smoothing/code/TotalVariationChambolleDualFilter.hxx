@@ -76,32 +76,13 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
   itk::ImageRegionConstIteratorWithIndex<InputImageType> it(input, outputRegionForThread);
   itk::ImageRegionIterator<OutputImageType> outIt(output, outputRegionForThread);
   itk::ImageRegionIterator<VectorImageType> gradIt(m_X, outputRegionForThread);
+  itk::ImageRegionIterator<OutputImageType> divIt(m_Div, outputRegionForThread);
   for(it.GoToBegin(),outIt.GoToBegin(),gradIt.GoToBegin(); 
       !it.IsAtEnd(); 
       ++it,++outIt,++gradIt)
   {
-    ////////////////////////////////////
-    // compute divergence on current X:
-    /*
-    PixelType div = 0;
-    IndexType center = it.GetIndex();
-    GradientType gradCenter = gradIt.Get();
-    for(size_t i=0; i<gradCenter.Size(); ++i)
-    {
-      if(!(center[i] == 0 || center[i] == size[i]-1)) // not on edge
-      {
-        IndexType overOne = center;
-        overOne[i] -= 1;
-
-        GradientType gradOverOne = m_X->GetPixel(overOne);
-        div += gradOverOne[i] - gradCenter[i];
-      }
-    }
-    div = -div; // we want the negative divergence
-    */
-
     /////////////////////////////////
-    // compute gradient on current Y:
+    // compute gradient on modified divergence
     GradientType grad;
     IndexType center = it.GetIndex();
     for(size_t i=0; i<grad.Size(); ++i)
@@ -114,25 +95,18 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
       {
         IndexType overOne = center;
         overOne[i] += 1;
-        grad[i] = input->GetPixel(overOne) - it.Get();
+        grad[i] = (m_Div->GetPixel(overOne) - m_Lambda*(input->GetPixel(overOne))) - (divIt.Get() - m_Lambda*it.Get());
       }
     }
-    grad = -grad;
+    //grad = -grad;
 
     ///////////////////////
     // Dual Step:
     GradientType x = gradIt.Get();
-    GradientType xp = x + m_DualStepSize * m_Lambda * grad;
+    GradientType xp = x - m_DualStepSize * grad;
 
-    // project onto X (see Remark 2 on p. 10)
-    for(size_t i=0; i<xp.Size(); ++i)
-    {
-      typename GradientType::ComponentType den=fabs(xp[i]);
-      if( den > 1 )
-      {
-        xp[i] /= den;
-      }
-    }
+    // normalize
+    xp /= (1+m_DualStepSize*grad.GetNorm());
     for(size_t i=0; i<x.Size(); ++i)
     {
       if(std::isnan(xp[i])) 
