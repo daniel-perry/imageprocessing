@@ -47,6 +47,7 @@ public:
   /** Image type typedef support. */
   typedef TInputImage InputImageType;
   typedef TOutputImage OutputImageType;
+  typedef typename OutputImageType::Pointer OutputImagePointer;
   typedef typename OutputImageType::RegionType OutputImageRegionType;
   typedef typename InputImageType::SizeType ImageSizeType;
   typedef itk::Image<itk::Vector<float,InputImageType::ImageDimension>,InputImageType::ImageDimension> VectorImageType;
@@ -80,6 +81,12 @@ public:
    */
   itkSetMacro(X, VectorImagePointer)
   itkGetMacro(X, VectorImagePointer)
+  /**
+   *  Div - the divergence of the unit vector dual image
+   */
+  itkSetMacro(Div, OutputImagePointer)
+  itkGetMacro(Div, OutputImagePointer)
+
 
 protected:
   TotalVariationChambolleDualFilter()
@@ -113,7 +120,8 @@ private:
 
   std::vector<float> m_Deltas; // per thread
 
-  typename VectorImageType::Pointer m_X; // dual unit gradient image.
+  VectorImagePointer m_X; // dual unit gradient image.
+  OutputImagePointer m_Div; // divergence of m_X.
 };
 } // end namespace itk
 

@@ -82,6 +82,7 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
   {
     ////////////////////////////////////
     // compute divergence on current X:
+    /*
     PixelType div = 0;
     IndexType center = it.GetIndex();
     GradientType gradCenter = gradIt.Get();
@@ -97,6 +98,7 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
       }
     }
     div = -div; // we want the negative divergence
+    */
 
     /////////////////////////////////
     // compute gradient on current Y:

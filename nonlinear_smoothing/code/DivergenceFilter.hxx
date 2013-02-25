@@ -59,7 +59,7 @@ DivergenceFilter< TInputImage, TOutputImage >
         div += gradOverOne[i] - grad[i];
       }
     }
-    output->SetPixel( out.GetIndex(), div );
+    output->SetPixel( out.GetIndex(), -div );
   }
 }
 

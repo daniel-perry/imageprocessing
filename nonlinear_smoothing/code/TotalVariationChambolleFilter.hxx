@@ -16,6 +16,7 @@
 
 // local
 #include "UnitGradientFilter.h"
+#include "DivergenceFilter.h"
 #include "TotalVariationChambollePrimalFilter.h"
 #include "TotalVariationChambolleDualFilter.h"
 #include "DeepCopy.h"
@@ -50,11 +51,25 @@ TotalVariationChambolleFilter< TInputImage, TOutputImage >
     return;
   }
 
+  typedef DivergenceFilter<VectorImageType> DivFilter;
+  typename DivFilter::Pointer divFilter = DivFilter::New();
+  if(GetThreadCount()>0) divFilter->SetNumberOfThreads(GetThreadCount());
+  divFilter->SetInput(gradImage);
+  typename InternalImageType::Pointer divImage = divFilter->GetOutput();
+  try
+  {
+    divFilter->Update();
+  }
+  catch(itk::ExceptionObject e)
+  {
+    std::cerr << "Error running divergence filter: " << e << std::endl;
+    return;
+  }
+
   typedef TotalVariationChambolleDualFilter<InternalImageType> DualFilter;
   typename DualFilter::Pointer dualFilter = DualFilter::New();
   dualFilter->SetChambolle(this->GetChambolle());
   dualFilter->SetLambda(this->GetLambda());
-  dualFilter->SetX(gradImage);
   dualFilter->SetInput(internal);
   dualFilter->SetNumberOfThreads(1);
 
@@ -89,7 +104,8 @@ TotalVariationChambolleFilter< TInputImage, TOutputImage >
    
       dualFilter->Modified(); // force to run
       dualFilter->SetDualStepSize(tau);
-      if(m_Iters>0) dualFilter->SetInput(filterOutput);
+      dualFilter->SetX(gradImage);
+      dualFilter->SetDiv(divImage);
       try
       {
         //std::cerr << "running dual.." << std::endl;
@@ -107,6 +123,23 @@ TotalVariationChambolleFilter< TInputImage, TOutputImage >
         std::cerr << "inner converged!" << std::endl;
         break;
       }
+
+      gradImage = dualFilter->GetX();
+
+      divFilter->SetInput(gradImage);
+      divFilter->Modified(); // force to run
+      typename InternalImageType::Pointer divImage = divFilter->GetOutput();
+      try
+      {
+        divFilter->Update();
+      }
+      catch(itk::ExceptionObject e)
+      {
+        std::cerr << "Error running divergence filter: " << e << std::endl;
+        return;
+      }
+      divImage = divFilter->GetOutput();
+
       std::cerr << ".";
     }
     std::cerr << std::endl;
