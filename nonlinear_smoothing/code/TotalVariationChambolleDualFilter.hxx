@@ -80,6 +80,24 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
       !it.IsAtEnd(); 
       ++it,++outIt,++gradIt)
   {
+    ////////////////////////////////////
+    // compute divergence on current X:
+    PixelType div = 0;
+    IndexType center = it.GetIndex();
+    GradientType gradCenter = gradIt.Get();
+    for(size_t i=0; i<gradCenter.Size(); ++i)
+    {
+      if(!(center[i] == 0 || center[i] == size[i]-1)) // not on edge
+      {
+        IndexType overOne = center;
+        overOne[i] -= 1;
+
+        GradientType gradOverOne = m_X->GetPixel(overOne);
+        div += gradOverOne[i] - gradCenter[i];
+      }
+    }
+    div = -div; // we want the negative divergence
+
     /////////////////////////////////
     // compute gradient on current Y:
     GradientType grad;
@@ -102,7 +120,6 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
     ///////////////////////
     // Dual Step:
     GradientType x = gradIt.Get();
-    //std::cerr << "dual coefficient: " << m_DualStepSize * m_Lambda << std::endl; // debug
     GradientType xp = x + m_DualStepSize * m_Lambda * grad;
 
     // project onto X (see Remark 2 on p. 10)
@@ -123,12 +140,6 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
     }
 
     m_Deltas[threadId] += (xp-x).GetNorm();
-
-    /*
-    {//debug
-    std::cerr << center << ": " << x << " (" << x.GetNorm() << ")" << std::endl;
-    }
-    */
 
     m_X->SetPixel( gradIt.GetIndex(), xp ); // save result
   }
