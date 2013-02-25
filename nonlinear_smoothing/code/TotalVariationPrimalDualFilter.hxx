@@ -6,8 +6,8 @@
  * 
  *=========================================================================*/ 
 
-#ifndef TotalVariationImageFilter_hxx
-#define TotalVariationImageFilter_hxx
+#ifndef TotalVariationPrimalDualFilter_hxx
+#define TotalVariationPrimalDualFilter_hxx
 
 // itk
 #include "itkImageRegionConstIterator.h"
@@ -25,7 +25,7 @@ namespace imageprocessing
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationImageFilter< TInputImage, TOutputImage >
+TotalVariationPrimalDualFilter< TInputImage, TOutputImage >
 ::GenerateData()
 {
   typename InputImageType::ConstPointer input = this->GetInput();
@@ -155,7 +155,7 @@ TotalVariationImageFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationImageFilter< TInputImage, TOutputImage >
+TotalVariationPrimalDualFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);

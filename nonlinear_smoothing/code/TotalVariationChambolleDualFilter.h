@@ -5,8 +5,8 @@
  *  MIT license 
  * 
  *=========================================================================*/ 
-#ifndef TotalVariationDualFilter_h 
-#define TotalVariationDualFilter_h 
+#ifndef TotalVariationChambolleDualFilter_h 
+#define TotalVariationChambolleDualFilter_h 
 
 // itk includes
 #include "itkImage.h"
@@ -16,21 +16,21 @@
 namespace imageprocessing
 {
 /**
- * TotalVariationDualFilter
+ * TotalVariationChambolleDualFilter
  *  Implementation of total variation.  Initially done for 
  *  CS 7640 - Advanced Image Processing, Spring 2013, University of Utah
  */
 template< class TInputImage,
           class TOutputImage=TInputImage
         >
-class TotalVariationDualFilter:
+class TotalVariationChambolleDualFilter:
   public itk::ImageToImageFilter<TInputImage,TOutputImage>
 {
 public:
   /**
    * Standard class typedefs
    */
-  typedef TotalVariationDualFilter Self;
+  typedef TotalVariationChambolleDualFilter Self;
   typedef itk::ImageToImageFilter< TInputImage, TOutputImage > Superclass;
   typedef itk::SmartPointer< Self > Pointer;
   typedef itk::SmartPointer< const Self > ConstPointer;
@@ -42,7 +42,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(TotalVariationDualFilter, ImageToImageFilter);
+  itkTypeMacro(TotalVariationChambolleDualFilter, ImageToImageFilter);
 
   /** Image type typedef support. */
   typedef TInputImage InputImageType;
@@ -82,7 +82,7 @@ public:
   itkGetMacro(X, VectorImagePointer)
 
 protected:
-  TotalVariationDualFilter()
+  TotalVariationChambolleDualFilter()
   :m_Chambolle(false),
   m_DualStepSize(1),
   m_Lambda(1),
@@ -90,7 +90,7 @@ protected:
   m_X()
   {}
 
-  virtual ~TotalVariationDualFilter(){}
+  virtual ~TotalVariationChambolleDualFilter(){}
   void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
   /**
@@ -103,7 +103,7 @@ protected:
   void AfterThreadedGenerateData();
 
 private:
-  TotalVariationDualFilter(const Self &); // not allowed
+  TotalVariationChambolleDualFilter(const Self &); // not allowed
   void operator=(const Self &); // not allowed 
 
   bool m_Chambolle;
@@ -117,6 +117,6 @@ private:
 };
 } // end namespace itk
 
-#include "TotalVariationDualFilter.hxx"
+#include "TotalVariationChambolleDualFilter.hxx"
 
 #endif

@@ -7,5 +7,6 @@ tau=0.2 # = .2 + k*.08
 in=$1
 out=$2
 iters=$3
+flag=$4
 
-./tv $in $out $lambda $tau $iters
+./tv $in $out $lambda $tau $iters $flag

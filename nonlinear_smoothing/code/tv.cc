@@ -12,8 +12,10 @@
 #include "itkImageFileWriter.h"
 
 // local includes
-#include "TotalVariationImageFilter.h"
-using imageprocessing::TotalVariationImageFilter;
+#include "TotalVariationPrimalDualFilter.h"
+#include "TotalVariationChambolleFilter.h"
+using imageprocessing::TotalVariationPrimalDualFilter;
+using imageprocessing::TotalVariationChambolleFilter;
 
 int main(int argc, char * argv[] )
 {
@@ -55,21 +57,44 @@ int main(int argc, char * argv[] )
   }
 
   // run filter:
-  typedef TotalVariationImageFilter<ImageType> TVFilter;
-  TVFilter::Pointer tv = TVFilter::New();
-  tv->SetLambda(lambda);
-  tv->SetDualStepSize(dualStep);
-  tv->SetMaxIters(iters);
-  tv->SetInput(input);
-  ImageType::Pointer output = tv->GetOutput();
-  try
+  ImageType::Pointer output;
+  if(chambolleFlag)
   {
-    tv->Update();
+    typedef TotalVariationChambolleFilter<ImageType> TVFilter;
+    TVFilter::Pointer tv = TVFilter::New();
+    tv->SetLambda(lambda);
+    tv->SetDualStepSize(dualStep);
+    tv->SetMaxIters(iters);
+    tv->SetInput(input);
+    output = tv->GetOutput();
+    try
+    {
+      tv->Update();
+    }
+    catch(itk::ExceptionObject e)
+    {
+      std::cerr << "Error running TV filter :" << e << std::endl;
+      return 1;
+    }
   }
-  catch(itk::ExceptionObject e)
+  else
   {
-    std::cerr << "Error running TV filter :" << e << std::endl;
-    return 1;
+    typedef TotalVariationPrimalDualFilter<ImageType> TVFilter;
+    TVFilter::Pointer tv = TVFilter::New();
+    tv->SetLambda(lambda);
+    tv->SetDualStepSize(dualStep);
+    tv->SetMaxIters(iters);
+    tv->SetInput(input);
+    output = tv->GetOutput();
+    try
+    {
+      tv->Update();
+    }
+    catch(itk::ExceptionObject e)
+    {
+      std::cerr << "Error running TV filter :" << e << std::endl;
+      return 1;
+    }
   }
 
   typedef itk::ImageFileWriter< ImageType > WriterType;

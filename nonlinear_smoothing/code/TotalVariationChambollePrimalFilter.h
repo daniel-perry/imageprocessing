@@ -5,8 +5,8 @@
  *  MIT license 
  * 
  *=========================================================================*/ 
-#ifndef TotalVariationDualFilter_h 
-#define TotalVariationDualFilter_h 
+#ifndef TotalVariationChambollePrimalFilter_h 
+#define TotalVariationChambollePrimalFilter_h 
 
 // itk includes
 #include "itkImage.h"
@@ -16,21 +16,21 @@
 namespace imageprocessing
 {
 /**
- * TotalVariationDualFilter
+ * TotalVariationChambollePrimalFilter
  *  Implementation of total variation.  Initially done for 
  *  CS 7640 - Advanced Image Processing, Spring 2013, University of Utah
  */
 template< class TInputImage,
           class TOutputImage=TInputImage
         >
-class TotalVariationDualFilter:
+class TotalVariationChambollePrimalFilter:
   public itk::ImageToImageFilter<TInputImage,TOutputImage>
 {
 public:
   /**
    * Standard class typedefs
    */
-  typedef TotalVariationDualFilter Self;
+  typedef TotalVariationChambollePrimalFilter Self;
   typedef itk::ImageToImageFilter< TInputImage, TOutputImage > Superclass;
   typedef itk::SmartPointer< Self > Pointer;
   typedef itk::SmartPointer< const Self > ConstPointer;
@@ -42,10 +42,12 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(TotalVariationDualFilter, ImageToImageFilter);
+  itkTypeMacro(TotalVariationChambollePrimalFilter, ImageToImageFilter);
 
   /** Image type typedef support. */
   typedef TInputImage InputImageType;
+  typedef typename InputImageType::ConstPointer InputImageConstPointer;
+  typedef typename InputImageType::Pointer InputImagePointer;
   typedef TOutputImage OutputImageType;
   typedef typename OutputImageType::RegionType OutputImageRegionType;
   typedef typename InputImageType::SizeType ImageSizeType;
@@ -60,10 +62,10 @@ public:
   itkSetMacro(Chambolle, bool);
   itkGetConstMacro(Chambolle, bool);
   /**
-   * Step size for dual solution.
+   * Step size for primal solution.
    */
-  itkSetMacro(DualStepSize, float);
-  itkGetConstMacro(DualStepSize, float);
+  itkSetMacro(PrimalStepSize, float);
+  itkGetConstMacro(PrimalStepSize, float);
   /**
    * Normalizing parameter - makes it less sensitive to step sizes.
    */
@@ -81,42 +83,50 @@ public:
   itkSetMacro(X, VectorImagePointer)
   itkGetMacro(X, VectorImagePointer)
 
+  /**
+   * OriginalImage - the original image.
+   */
+  itkSetMacro(OriginalImage, InputImagePointer)
+  itkGetMacro(OriginalImage, InputImagePointer)
+
+
 protected:
-  TotalVariationDualFilter()
+  TotalVariationChambollePrimalFilter()
   :m_Chambolle(false),
-  m_DualStepSize(1),
+  m_PrimalStepSize(1),
   m_Lambda(1),
   m_Delta(10e10),
-  m_X()
+  m_X(),
+  m_OriginalImage()
   {}
 
-  virtual ~TotalVariationDualFilter(){}
+  virtual ~TotalVariationChambollePrimalFilter(){}
   void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
   /**
-   * Standard parallel pipeline methods
+   * Standard parallel pipeline method
    */
-  void AllocateOutputs();
   void BeforeThreadedGenerateData();
   void ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                               itk::ThreadIdType threadId);
   void AfterThreadedGenerateData();
 
 private:
-  TotalVariationDualFilter(const Self &); // not allowed
+  TotalVariationChambollePrimalFilter(const Self &); // not allowed
   void operator=(const Self &); // not allowed 
 
   bool m_Chambolle;
-  float m_DualStepSize;
+  float m_PrimalStepSize;
   float m_Lambda;
   float m_Delta;
 
   std::vector<float> m_Deltas; // per thread
 
-  typename VectorImageType::Pointer m_X; // dual unit gradient image.
+  VectorImagePointer m_X; // dual unit gradient image.
+  InputImagePointer m_OriginalImage;
 };
 } // end namespace itk
 
-#include "TotalVariationDualFilter.hxx"
+#include "TotalVariationChambollePrimalFilter.hxx"
 
 #endif
