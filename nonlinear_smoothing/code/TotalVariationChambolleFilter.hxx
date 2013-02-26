@@ -100,7 +100,7 @@ TotalVariationChambolleFilter< TInputImage, TOutputImage >
     for(size_t iters=0; iters<300; ++iters)
     {
       // update steps sizes
-      float tau = GetDualStepSize() + 0.08 * m_Iters;
+      float tau = GetDualStepSize();
    
       dualFilter->Modified(); // force to run
       dualFilter->SetDualStepSize(tau);
@@ -140,9 +140,16 @@ TotalVariationChambolleFilter< TInputImage, TOutputImage >
       }
       divImage = divFilter->GetOutput();
 
+      if(iters%50==0)
+      {
+        std::cerr << std::endl << "inner delta: " << innerDelta << std::endl;
+        std::cerr << "frob norm of div: " << divFilter->GetNorm() << std::endl;
+      }
+
       std::cerr << ".";
     }
     std::cerr << std::endl;
+    std::cerr << "inner delta: " << innerDelta << std::endl;
 
     primalFilter->Modified(); // force to run
     //float theta = (0.5 - (5/(15+m_Iters)))/tau;

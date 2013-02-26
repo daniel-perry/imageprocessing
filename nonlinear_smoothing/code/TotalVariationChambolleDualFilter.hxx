@@ -53,8 +53,6 @@ void
 TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
-  //typename InputImageType::ConstPointer input = this->GetInput();
-  //typename OutputImageType::Pointer output = this->GetOutput();
   m_Deltas.resize( this->GetNumberOfThreads() );
 }
 
@@ -98,7 +96,7 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
         grad[i] = (m_Div->GetPixel(overOne) - m_Lambda*(input->GetPixel(overOne))) - (divIt.Get() - m_Lambda*it.Get());
       }
     }
-    //grad = -grad;
+    grad = -grad;
 
     ///////////////////////
     // Dual Step:

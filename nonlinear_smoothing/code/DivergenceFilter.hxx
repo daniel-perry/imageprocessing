@@ -25,6 +25,9 @@ void
 DivergenceFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
+  m_Norms.resize(this->GetNumberOfThreads());
+  for(size_t i=0; i<m_Norms.size(); ++i)
+    m_Norms[i] = 0;
 }
 
 template< class TInputImage, class TOutputImage >
@@ -60,7 +63,20 @@ DivergenceFilter< TInputImage, TOutputImage >
       }
     }
     output->SetPixel( out.GetIndex(), -div );
+
+    m_Norms[threadId] += div*div; // frob norm
   }
+}
+
+template< class TInputImage, class TOutputImage >
+void
+DivergenceFilter< TInputImage, TOutputImage >
+::AfterThreadedGenerateData()
+{
+  m_Norm = 0;
+  for(size_t i=0; i<m_Norms.size(); ++i)
+    m_Norm += m_Norms[i];
+  m_Norm = ::sqrt(m_Norm);
 }
 
 template< class TInputImage, class TOutputImage >

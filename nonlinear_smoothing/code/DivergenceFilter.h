@@ -52,6 +52,12 @@ public:
   typedef typename OutputImageType::RegionType OutputImageRegionType;
   typedef typename InputImageType::SizeType ImageSizeType;
 
+  /**
+   * Norm - a norm of the image..
+   */
+  itkSetMacro(Norm, float);
+  itkGetConstMacro(Norm, float);
+
 protected:
   DivergenceFilter()
   {}
@@ -65,10 +71,14 @@ protected:
   void BeforeThreadedGenerateData();
   void ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                               itk::ThreadIdType threadId);
+  void AfterThreadedGenerateData();
 
 private:
   DivergenceFilter(const Self &); // not allowed
   void operator=(const Self &); // not allowed 
+
+  float m_Norm;
+  std::vector<float> m_Norms; // per thread
 };
 } // end namespace itk
 

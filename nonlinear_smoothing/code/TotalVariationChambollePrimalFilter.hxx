@@ -79,7 +79,8 @@ TotalVariationChambollePrimalFilter< TInputImage, TOutputImage >
     PixelType y = it.Get();
     PixelType tmp = y;
 
-    y = (1-m_PrimalStepSize) * y + m_PrimalStepSize * (originalIt.Get() - (1/m_Lambda) * div);
+    //y = (1-m_PrimalStepSize) * y + m_PrimalStepSize * (originalIt.Get() - (1/m_Lambda) * div);
+    y = y + m_PrimalStepSize * div;
     if(std::isnan(y))
     {
       throw itk::ExceptionObject("NaN detected in Primal step");
