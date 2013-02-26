@@ -5,8 +5,8 @@
  *  MIT license 
  * 
  *=========================================================================*/ 
-#ifndef TotalVariationChambollePrimalFilter_h 
-#define TotalVariationChambollePrimalFilter_h 
+#ifndef ChambollePrimalFilter_h 
+#define ChambollePrimalFilter_h 
 
 // itk includes
 #include "itkImage.h"
@@ -16,21 +16,21 @@
 namespace imageprocessing
 {
 /**
- * TotalVariationChambollePrimalFilter
+ * ChambollePrimalFilter
  *  Implementation of total variation.  Initially done for 
  *  CS 7640 - Advanced Image Processing, Spring 2013, University of Utah
  */
 template< class TInputImage,
           class TOutputImage=TInputImage
         >
-class TotalVariationChambollePrimalFilter:
+class ChambollePrimalFilter:
   public itk::ImageToImageFilter<TInputImage,TOutputImage>
 {
 public:
   /**
    * Standard class typedefs
    */
-  typedef TotalVariationChambollePrimalFilter Self;
+  typedef ChambollePrimalFilter Self;
   typedef itk::ImageToImageFilter< TInputImage, TOutputImage > Superclass;
   typedef itk::SmartPointer< Self > Pointer;
   typedef itk::SmartPointer< const Self > ConstPointer;
@@ -42,7 +42,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(TotalVariationChambollePrimalFilter, ImageToImageFilter);
+  itkTypeMacro(ChambollePrimalFilter, ImageToImageFilter);
 
   /** Image type typedef support. */
   typedef TInputImage InputImageType;
@@ -91,7 +91,7 @@ public:
 
 
 protected:
-  TotalVariationChambollePrimalFilter()
+  ChambollePrimalFilter()
   :m_Chambolle(false),
   m_PrimalStepSize(1),
   m_Lambda(1),
@@ -100,7 +100,7 @@ protected:
   m_OriginalImage()
   {}
 
-  virtual ~TotalVariationChambollePrimalFilter(){}
+  virtual ~ChambollePrimalFilter(){}
   void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
   /**
@@ -112,7 +112,7 @@ protected:
   void AfterThreadedGenerateData();
 
 private:
-  TotalVariationChambollePrimalFilter(const Self &); // not allowed
+  ChambollePrimalFilter(const Self &); // not allowed
   void operator=(const Self &); // not allowed 
 
   bool m_Chambolle;
@@ -127,6 +127,6 @@ private:
 };
 } // end namespace itk
 
-#include "TotalVariationChambollePrimalFilter.hxx"
+#include "ChambollePrimalFilter.hxx"
 
 #endif

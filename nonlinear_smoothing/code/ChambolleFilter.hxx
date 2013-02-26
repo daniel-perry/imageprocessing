@@ -6,8 +6,8 @@
  * 
  *=========================================================================*/ 
 
-#ifndef TotalVariationChambolleFilter_hxx
-#define TotalVariationChambolleFilter_hxx
+#ifndef ChambolleFilter_hxx
+#define ChambolleFilter_hxx
 
 // itk
 #include "itkImageRegionConstIterator.h"
@@ -17,8 +17,8 @@
 // local
 #include "UnitGradientFilter.h"
 #include "DivergenceFilter.h"
-#include "TotalVariationChambollePrimalFilter.h"
-#include "TotalVariationChambolleDualFilter.h"
+#include "ChambollePrimalFilter.h"
+#include "ChambolleDualFilter.h"
 #include "DeepCopy.h"
 
 namespace imageprocessing
@@ -26,7 +26,7 @@ namespace imageprocessing
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambolleFilter< TInputImage, TOutputImage >
+ChambolleFilter< TInputImage, TOutputImage >
 ::GenerateData()
 {
   typename InputImageType::ConstPointer input = this->GetInput();
@@ -66,14 +66,14 @@ TotalVariationChambolleFilter< TInputImage, TOutputImage >
     return;
   }
 
-  typedef TotalVariationChambolleDualFilter<InternalImageType> DualFilter;
+  typedef ChambolleDualFilter<InternalImageType> DualFilter;
   typename DualFilter::Pointer dualFilter = DualFilter::New();
   dualFilter->SetChambolle(this->GetChambolle());
   dualFilter->SetLambda(this->GetLambda());
   dualFilter->SetInput(internal);
   dualFilter->SetNumberOfThreads(1);
 
-  typedef TotalVariationChambollePrimalFilter<InternalImageType> PrimalFilter;
+  typedef ChambollePrimalFilter<InternalImageType> PrimalFilter;
   typename PrimalFilter::Pointer primalFilter = PrimalFilter::New();
   primalFilter->SetChambolle(this->GetChambolle());
   primalFilter->SetLambda(this->GetLambda());
@@ -211,7 +211,7 @@ TotalVariationChambolleFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambolleFilter< TInputImage, TOutputImage >
+ChambolleFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);

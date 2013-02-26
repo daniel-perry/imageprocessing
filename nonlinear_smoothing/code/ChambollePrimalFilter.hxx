@@ -6,8 +6,8 @@
  * 
  *=========================================================================*/ 
 
-#ifndef TotalVariationChambollePrimalFilter_hxx
-#define TotalVariationChambollePrimalFilter_hxx
+#ifndef ChambollePrimalFilter_hxx
+#define ChambollePrimalFilter_hxx
 
 #include "itkConstNeighborhoodIterator.h"
 #include "itkNeighborhoodIterator.h"
@@ -22,7 +22,7 @@ namespace imageprocessing
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambollePrimalFilter< TInputImage, TOutputImage >
+ChambollePrimalFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
   //typename InputImageType::ConstPointer input = this->GetInput();
@@ -35,7 +35,7 @@ TotalVariationChambollePrimalFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambollePrimalFilter< TInputImage, TOutputImage >
+ChambollePrimalFilter< TInputImage, TOutputImage >
 ::ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                         itk::ThreadIdType threadId)
 {
@@ -96,7 +96,7 @@ TotalVariationChambollePrimalFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambollePrimalFilter< TInputImage, TOutputImage >
+ChambollePrimalFilter< TInputImage, TOutputImage >
 ::AfterThreadedGenerateData()
 {
   m_Delta = 0;
@@ -108,7 +108,7 @@ TotalVariationChambollePrimalFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambollePrimalFilter< TInputImage, TOutputImage >
+ChambollePrimalFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);

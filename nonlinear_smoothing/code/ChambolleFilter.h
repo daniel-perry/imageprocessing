@@ -5,8 +5,8 @@
  *  MIT license 
  * 
  *=========================================================================*/ 
-#ifndef TotalVariationChambolleFilter_h 
-#define TotalVariationChambolleFilter_h 
+#ifndef ChambolleFilter_h 
+#define ChambolleFilter_h 
 
 // itk includes
 #include "itkImage.h"
@@ -16,21 +16,21 @@
 namespace imageprocessing
 {
 /**
- * TotalVariationChambolleFilter
+ * ChambolleFilter
  *  Implementation of total variation.  Initially done for 
  *  CS 7640 - Advanced Image Processing, Spring 2013, University of Utah
  */
 template< class TInputImage,
           class TOutputImage=TInputImage
         >
-class TotalVariationChambolleFilter:
+class ChambolleFilter:
   public itk::ImageToImageFilter<TInputImage,TOutputImage>
 {
 public:
   /**
    * Standard class typedefs
    */
-  typedef TotalVariationChambolleFilter Self;
+  typedef ChambolleFilter Self;
   typedef itk::ImageToImageFilter< TInputImage, TOutputImage > Superclass;
   typedef itk::SmartPointer< Self > Pointer;
   typedef itk::SmartPointer< const Self > ConstPointer;
@@ -42,7 +42,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(TotalVariationChambolleFilter, ImageToImageFilter);
+  itkTypeMacro(ChambolleFilter, ImageToImageFilter);
 
   /** Image type typedef support. */
   typedef TInputImage InputImageType;
@@ -88,7 +88,7 @@ public:
   }
 
 protected:
-  TotalVariationChambolleFilter()
+  ChambolleFilter()
   :m_Chambolle(false),
   m_DualStepSize(1),
   m_Lambda(1),
@@ -97,13 +97,13 @@ protected:
   m_ThreadCount(0)
   {}
 
-  virtual ~TotalVariationChambolleFilter(){}
+  virtual ~ChambolleFilter(){}
   void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
   void GenerateData();
 
 private:
-  TotalVariationChambolleFilter(const Self &); // not allowed
+  ChambolleFilter(const Self &); // not allowed
   void operator=(const Self &); // not allowed 
 
   bool m_Chambolle;
@@ -115,6 +115,6 @@ private:
 };
 } // end namespace itk
 
-#include "TotalVariationChambolleFilter.hxx"
+#include "ChambolleFilter.hxx"
 
 #endif

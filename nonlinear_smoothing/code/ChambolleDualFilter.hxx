@@ -6,8 +6,8 @@
  * 
  *=========================================================================*/ 
 
-#ifndef TotalVariationChambolleDualFilter_hxx
-#define TotalVariationChambolleDualFilter_hxx
+#ifndef ChambolleDualFilter_hxx
+#define ChambolleDualFilter_hxx
 
 #include "itkConstNeighborhoodIterator.h"
 #include "itkNeighborhoodIterator.h"
@@ -22,7 +22,7 @@ namespace imageprocessing
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
+ChambolleDualFilter< TInputImage, TOutputImage >
 ::AllocateOutputs()
 {
   typename OutputImageType::Pointer outputPtr;
@@ -50,7 +50,7 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
+ChambolleDualFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
   m_Deltas.resize( this->GetNumberOfThreads() );
@@ -58,7 +58,7 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
+ChambolleDualFilter< TInputImage, TOutputImage >
 ::ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                         itk::ThreadIdType threadId)
 {
@@ -121,7 +121,7 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
+ChambolleDualFilter< TInputImage, TOutputImage >
 ::AfterThreadedGenerateData()
 {
   m_Delta = 0;
@@ -132,7 +132,7 @@ TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationChambolleDualFilter< TInputImage, TOutputImage >
+ChambolleDualFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);

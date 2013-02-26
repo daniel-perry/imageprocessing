@@ -13,9 +13,9 @@
 
 // local includes
 #include "TotalVariationPrimalDualFilter.h"
-#include "TotalVariationChambolleFilter.h"
+#include "ChambolleFilter.h"
 using imageprocessing::TotalVariationPrimalDualFilter;
-using imageprocessing::TotalVariationChambolleFilter;
+using imageprocessing::ChambolleFilter;
 
 int main(int argc, char * argv[] )
 {
@@ -60,7 +60,7 @@ int main(int argc, char * argv[] )
   ImageType::Pointer output;
   if(chambolleFlag)
   {
-    typedef TotalVariationChambolleFilter<ImageType> TVFilter;
+    typedef ChambolleFilter<ImageType> TVFilter;
     TVFilter::Pointer tv = TVFilter::New();
     tv->SetLambda(lambda);
     tv->SetDualStepSize(dualStep);
