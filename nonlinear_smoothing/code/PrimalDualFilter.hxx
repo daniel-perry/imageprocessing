@@ -6,8 +6,8 @@
  * 
  *=========================================================================*/ 
 
-#ifndef TotalVariationPrimalDualFilter_hxx
-#define TotalVariationPrimalDualFilter_hxx
+#ifndef PrimalDualFilter_hxx
+#define PrimalDualFilter_hxx
 
 // itk
 #include "itkImageRegionConstIterator.h"
@@ -16,8 +16,8 @@
 
 // local
 #include "UnitGradientFilter.h"
-#include "TotalVariationPrimalFilter.h"
-#include "TotalVariationDualFilter.h"
+#include "PrimalFilter.h"
+#include "DualFilter.h"
 #include "DeepCopy.h"
 
 namespace imageprocessing
@@ -25,7 +25,7 @@ namespace imageprocessing
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationPrimalDualFilter< TInputImage, TOutputImage >
+PrimalDualFilter< TInputImage, TOutputImage >
 ::GenerateData()
 {
   typename InputImageType::ConstPointer input = this->GetInput();
@@ -50,7 +50,7 @@ TotalVariationPrimalDualFilter< TInputImage, TOutputImage >
     return;
   }
 
-  typedef TotalVariationDualFilter<InternalImageType> DualFilter;
+  typedef DualFilter<InternalImageType> DualFilter;
   typename DualFilter::Pointer dualFilter = DualFilter::New();
   dualFilter->SetChambolle(this->GetChambolle());
   dualFilter->SetLambda(this->GetLambda());
@@ -58,7 +58,7 @@ TotalVariationPrimalDualFilter< TInputImage, TOutputImage >
   dualFilter->SetInput(internal);
   dualFilter->SetNumberOfThreads(1);
 
-  typedef TotalVariationPrimalFilter<InternalImageType> PrimalFilter;
+  typedef PrimalFilter<InternalImageType> PrimalFilter;
   typename PrimalFilter::Pointer primalFilter = PrimalFilter::New();
   primalFilter->SetChambolle(this->GetChambolle());
   primalFilter->SetLambda(this->GetLambda());
@@ -155,7 +155,7 @@ TotalVariationPrimalDualFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationPrimalDualFilter< TInputImage, TOutputImage >
+PrimalDualFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);

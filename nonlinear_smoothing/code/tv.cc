@@ -12,9 +12,9 @@
 #include "itkImageFileWriter.h"
 
 // local includes
-#include "TotalVariationPrimalDualFilter.h"
+#include "PrimalDualFilter.h"
 #include "ChambolleFilter.h"
-using imageprocessing::TotalVariationPrimalDualFilter;
+using imageprocessing::PrimalDualFilter;
 using imageprocessing::ChambolleFilter;
 
 int main(int argc, char * argv[] )
@@ -79,7 +79,7 @@ int main(int argc, char * argv[] )
   }
   else
   {
-    typedef TotalVariationPrimalDualFilter<ImageType> TVFilter;
+    typedef PrimalDualFilter<ImageType> TVFilter;
     TVFilter::Pointer tv = TVFilter::New();
     tv->SetLambda(lambda);
     tv->SetDualStepSize(dualStep);

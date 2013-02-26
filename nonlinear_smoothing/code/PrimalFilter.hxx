@@ -6,8 +6,8 @@
  * 
  *=========================================================================*/ 
 
-#ifndef TotalVariationPrimalFilter_hxx
-#define TotalVariationPrimalFilter_hxx
+#ifndef PrimalFilter_hxx
+#define PrimalFilter_hxx
 
 #include "itkConstNeighborhoodIterator.h"
 #include "itkNeighborhoodIterator.h"
@@ -22,7 +22,7 @@ namespace imageprocessing
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationPrimalFilter< TInputImage, TOutputImage >
+PrimalFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
   //typename InputImageType::ConstPointer input = this->GetInput();
@@ -35,7 +35,7 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationPrimalFilter< TInputImage, TOutputImage >
+PrimalFilter< TInputImage, TOutputImage >
 ::ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                         itk::ThreadIdType threadId)
 {
@@ -106,7 +106,7 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationPrimalFilter< TInputImage, TOutputImage >
+PrimalFilter< TInputImage, TOutputImage >
 ::AfterThreadedGenerateData()
 {
   m_Delta = 0;
@@ -118,7 +118,7 @@ TotalVariationPrimalFilter< TInputImage, TOutputImage >
 
 template< class TInputImage, class TOutputImage >
 void
-TotalVariationPrimalFilter< TInputImage, TOutputImage >
+PrimalFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
