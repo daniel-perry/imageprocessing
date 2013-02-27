@@ -147,6 +147,8 @@ SplitBregmanFilter< TInputImage, TOutputImage >
   //}
 
   typename OutputImageType::Pointer output = this->GetOutput();
+  output->SetRegions(u->GetLargestPossibleRegion());
+  output->Allocate();
   DeepCopy<InternalImageType,OutputImageType>(u,output); // need to convert to unsigned char.
 }
 
