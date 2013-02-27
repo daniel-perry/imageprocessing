@@ -105,7 +105,6 @@ ChambolleDualFilter< TInputImage, TOutputImage >
         originalGrad[i] = input->GetPixel(overOne) - it.Get();
       }
     }
-    //grad = -grad;
 
     ///////////////////////
     // Dual Step:
@@ -147,7 +146,7 @@ ChambolleDualFilter< TInputImage, TOutputImage >
     if(m_DualStepSize < m_StepSizeEst[i])
       m_DualStepSize = m_StepSizeEst[i];
   }
-  m_DualStepSize = 1/(2*m_DualStepSize + itk::NumericTraits<float>::min()); // step size for next iter
+  m_DualStepSize = 1/(2.5*m_DualStepSize + itk::NumericTraits<float>::min()); // step size for next iter
 }
 
 

@@ -74,7 +74,7 @@ ChambollePrimalFilter< TInputImage, TOutputImage >
       }
       else // not on border
       {
-        div += gradCenter[i] - gradOverOne[i] ;
+        div += gradCenter[i] - gradOverOne[i];
       }
  
     }
