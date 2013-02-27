@@ -85,4 +85,22 @@ TARGET_LINK_LIBRARIES(  toy_data
                         ${ITK_LIBRARIES}
                      ) 
 
+# add_noise
+SET( add_noise_SRCS
+     add_noise.cc
+)
+
+SET( add_noise_HDRS
+  normal_dist.h
+)
+
+ADD_EXECUTABLE( add_noise
+                ${add_noise_SRCS}
+                ${add_noise_HDRS}
+				      )
+
+TARGET_LINK_LIBRARIES(  add_noise
+                        ${ITK_LIBRARIES}
+                     ) 
+
 

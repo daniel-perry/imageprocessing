@@ -71,14 +71,14 @@ ChambolleFilter< TInputImage, TOutputImage >
   dualFilter->SetLambda(this->GetLambda());
   dualFilter->SetDualStepSize(this->GetDualStepSize());
   dualFilter->SetInput(internal);
-  dualFilter->SetNumberOfThreads(1);
+  if(GetThreadCount()>0) dualFilter->SetNumberOfThreads(GetThreadCount());
 
   typedef ChambollePrimalFilter<InternalImageType> PrimalFilter;
   typename PrimalFilter::Pointer primalFilter = PrimalFilter::New();
   primalFilter->SetLambda(this->GetLambda());
   primalFilter->SetInput(internal);
   primalFilter->SetOriginalImage(internal);
-  primalFilter->SetNumberOfThreads(1);
+  if(GetThreadCount()>0) primalFilter->SetNumberOfThreads(GetThreadCount());
 
   typename InternalImageType::Pointer filterOutput;
   float delta = itk::NumericTraits<float>::max();

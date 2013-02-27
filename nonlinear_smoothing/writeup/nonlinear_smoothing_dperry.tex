@@ -13,6 +13,7 @@
 \DeclareMathOperator{\E}{E}
 \DeclareMathOperator{\Var}{Var}
 \DeclareMathOperator{\Unif}{Unif}
+\DeclareMathOperator{\shrink}{shrink}
 
 \begin{document}
 \thispagestyle{empty}
@@ -46,9 +47,10 @@ As briefly described above varation can be described like so:
 \int |\nabla u| dx dy
 \end{equation*}
 Where we want to minimize the varation while maintaining some similarity with the original image, we hope to minimize the following constrained problem:
-\begin{equation*}
+\begin{equation}
 \min \int |\nabla u| dx dy \text{ s.t.} \int (u-u_0)^2 dxdy = \sigma^2
-\end{equation*}
+\label{tv:isotropic}
+\end{equation}
 This specific formulation is referred to colloquially as the ROF model.
 When originally presented in \cite{rudin1992nonlinear}, a gradient descent type algorithm was suggested to minimize the Euler-Lagrange equations of the problem.
 While the results were good, the specific algorithm for solving it was numerically difficult, due to the possibility of $|\nabla u|=0$.
@@ -80,7 +82,8 @@ In practice this two step approach is repeated until desirable results are reach
 Here the implementation was done entirely in C++ using the ITK framework.
 ITK was used primarily for image and vector data structures, I/O, and some infrastructure for parallelization.
 Any actual numerics were rewritten for this project, including gradient and divergence operations.
-A reader interested in following the code would be directed to primarily read the respective "GenerateData()" and "ThreadedGenerateData()" methods of the .hxx files of the classes described below, as that is where the action takes place - the rest is infrastructure.
+A reader interested in following the code would be directed to primarily read the respective "GenerateData()" and "ThreadedGenerateData()" methods of the .hxx files of the classes described below, as that is where the action takes place - the rest is infrastructure. 
+A README.txt file in the code directory describes how to build the executable.
 
 In order to parallelize the algorithm, it was decomposed into a few distinct parallel steps over the image, with a single threaded iteration loop.  
 The structure follows directly the algorithm structure:
@@ -127,12 +130,72 @@ A single thread loop controlled the main iteration, while separate parallel proc
 Here is the specific break down:
 \begin{enumerate}
 \item PrimalDualFilter.h,.hxx - the main loop
-\item DualFilter.h,.hxx - the 
-\item PrimalFilter.h,.hxx - the parallel primal step
+\item DualFilter.h,.hxx - the parallel dual step
+\item PrimalFilter.h,.hxx - the parallel primal step\\
+UnitGradientFilter.h,.hxx - parallel unit gradient computation
 \end{enumerate}
 
+Again, the "balance" of the derivatives was very important here.
+Similar to above the gradient used a "right-sided" difference, while the divergence was computed using a "left-sided" difference.
+
+While I found it necessary to compute the initial $p$ unit gradient field, all other gradient and divergence calculations are done in the dual and primal step filters themselves.
+
+I primarily used the original paper to do the implementation.
+
+This algorithm was much faster than Chambolle's, but specific results are shown below.
 
 \subsection{Split-Bregman Algorithm}
+The most recent of those approaches discussed here, is the Split-Bregman approach described in \cite{goldstein2009split}.  
+While the two methods discussed above are quite similar, this approach takes a slightly different route.
+Also, while the above algorithms minimize isotropic total variation, the algorithm implemented here minimizes an anisotropic total variation.
+The same paper \cite{goldstein2009split} describes an isotropic version of Split-Bregman, but is not discussed in this report.
+
+Instead of solving the problem described in \ref{tv:isotropic}, the anisotropic Split-Bregman addresses this similar anisotropic problem:
+\begin{equation}
+\arg \min_{u}\left[ |du/dx|_1 + |du/dy|_1 + \frac{\mu}{2}||u-u_o||^2_2 \right]
+\label{tv:anisotropic}
+\end{equation}
+
+The basic algorithm is as follows:
+\begin{enumerate}
+\item A single Gauss-Seidel (or similar) step to solve the $L_2$ problem.
+\begin{equation*}
+u^{k+1} = G(u^k,d^k,b^k)
+\end{equation*}
+\item A shrinkage step
+\begin{equation*}
+d^{k+1}_x = \shrink(\nabla_x u^{k+1} + b^k_x, 1/\lambda)
+\end{equation*}
+\begin{equation*}
+d^{k+1}_y = \shrink(\nabla_y u^{k+1} + b^k_y, 1/\lambda)
+\end{equation*}
+\item A Bregman update
+\begin{equation*}
+b^{k+1}_x = b^k_x + (\nabla_x u^{k+1} - d^{k+1}_x)
+\end{equation*}
+\begin{equation*}
+b^{k+1}_y = b^k_y + (\nabla_y u^{k+1} - d^{k+1}_y)
+\end{equation*}
+
+\end{enumerate}
+
+This was also implemented in C++ using ITK.
+This algorithm was surprisingly simple to implement.
+It's the only algorithm where I simply coded up the algorithm, compiled, and it worked.
+This may have been due to it being the last one implemented, but I'd like to think it's somewhat due to the simplicity and robustness of the approach.
+It was also surprising how fast it is.  
+When I first completed the code I thought something must be wrong, but it just converges very quickly.
+
+To parallelize this code, I broke the algorithm into two distinct parallel steps, the Gauss-Seidel step and a combined shrinkage and Bregman update step, with a single iteration loop:
+
+\begin{enumerate}
+\item SplitBregman.h,.hxx - the main loop
+\item GaussSeidelFilter.h,.hxx - the parallel Gauss-Seidel step
+\item ShrinkBregmanFilter.h,.hxx - the parallel Shrink and Bregman update step
+GradientFilter.h,.hxx - a parallel gradient filter
+\end{enumerate}
+
+This code was mainly implemented using the original paper \cite{goldstein2009split}, I also got a few details like edge conditions, etc. from Goldsteins implementation available for download at his website \cite{goldsteinImplmentation}.
 
 \section{Results}
 \subsection{Chambolle's Algorithm}
