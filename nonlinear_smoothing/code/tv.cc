@@ -21,7 +21,7 @@ int main(int argc, char * argv[] )
 {
   if(argc < 2)
   {
-    std::cerr << "usage: " << argv[0] << " <in.png> <out.png> <lambda> <dual-step> <iters> [chambolle-flag]" << std::endl;
+    std::cerr << "usage: " << argv[0] << " <in.png> <out.png> <lambda> <dual-step> <iters> <threads> [chambolle-flag]" << std::endl;
     std::cerr << "note: chambolle-flag=1 means use chambolled instead of primal-dual" << std::endl;
     return 1;
   }
@@ -31,10 +31,11 @@ int main(int argc, char * argv[] )
   float lambda = atof(argv[3]);
   float dualStep = atof(argv[4]);
   size_t iters = atoi(argv[5]);
+  size_t threads = atoi(argv[6]);
   bool chambolleFlag = 0;
-  if(argc > 6)
+  if(argc > 7)
   {
-    chambolleFlag = atoi(argv[6]) == 1;
+    chambolleFlag = atoi(argv[7]) == 1;
   }
 
   const size_t Dimension = 2;
@@ -66,6 +67,7 @@ int main(int argc, char * argv[] )
     tv->SetDualStepSize(dualStep);
     tv->SetMaxIters(iters);
     tv->SetInput(input);
+    tv->SetThreadCount(threads);
     output = tv->GetOutput();
     try
     {
@@ -85,6 +87,7 @@ int main(int argc, char * argv[] )
     tv->SetDualStepSize(dualStep);
     tv->SetMaxIters(iters);
     tv->SetInput(input);
+    tv->SetThreadCount(threads);
     output = tv->GetOutput();
     try
     {

@@ -76,6 +76,7 @@ public:
   itkSetMacro(Delta, float);
   itkGetConstMacro(Delta, float);
 
+
   /**
    * X - the unit vector dual image
    */
@@ -94,7 +95,8 @@ protected:
   m_DualStepSize(1),
   m_Lambda(1),
   m_Delta(10e10),
-  m_X()
+  m_X(),
+  m_Div()
   {}
 
   virtual ~ChambolleDualFilter(){}
@@ -119,6 +121,7 @@ private:
   float m_Delta;
 
   std::vector<float> m_Deltas; // per thread
+  std::vector<float> m_StepSizeEst; // per thread
 
   VectorImagePointer m_X; // dual unit gradient image.
   OutputImagePointer m_Div; // divergence of m_X.

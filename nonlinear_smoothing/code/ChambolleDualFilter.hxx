@@ -54,6 +54,12 @@ ChambolleDualFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
   m_Deltas.resize( this->GetNumberOfThreads() );
+  m_StepSizeEst.resize( this->GetNumberOfThreads() );
+  for(size_t i=0; i<m_Deltas.size(); ++i)
+  {
+    m_Deltas[i] = 0;
+    m_StepSizeEst[i] = 0;
+  }
 }
 
 template< class TInputImage, class TOutputImage >
@@ -75,13 +81,14 @@ ChambolleDualFilter< TInputImage, TOutputImage >
   itk::ImageRegionIterator<OutputImageType> outIt(output, outputRegionForThread);
   itk::ImageRegionIterator<VectorImageType> gradIt(m_X, outputRegionForThread);
   itk::ImageRegionIterator<OutputImageType> divIt(m_Div, outputRegionForThread);
-  for(it.GoToBegin(),outIt.GoToBegin(),gradIt.GoToBegin(); 
+  for(it.GoToBegin(),outIt.GoToBegin(),gradIt.GoToBegin(),divIt.GoToBegin(); 
       !it.IsAtEnd(); 
-      ++it,++outIt,++gradIt)
+      ++it,++outIt,++gradIt,++divIt)
   {
     /////////////////////////////////
     // compute gradient on modified divergence
     GradientType grad;
+    GradientType originalGrad;
     IndexType center = it.GetIndex();
     for(size_t i=0; i<grad.Size(); ++i)
     {
@@ -93,18 +100,29 @@ ChambolleDualFilter< TInputImage, TOutputImage >
       {
         IndexType overOne = center;
         overOne[i] += 1;
-        grad[i] = (m_Div->GetPixel(overOne) - m_Lambda*(input->GetPixel(overOne))) - (divIt.Get() - m_Lambda*it.Get());
+        //grad[i] = (m_Div->GetPixel(overOne) - m_Lambda*(input->GetPixel(overOne))) - (divIt.Get() - m_Lambda*it.Get());
+        grad[i] = m_Div->GetPixel(overOne) - divIt.Get();
+
+        originalGrad[i] = input->GetPixel(overOne) - it.Get();
       }
     }
-    grad = -grad;
+    //grad = -grad;
 
     ///////////////////////
     // Dual Step:
     GradientType x = gradIt.Get();
-    GradientType xp = x - m_DualStepSize * grad;
+    //GradientType xp = x - m_DualStepSize * grad;
+    GradientType xp = (grad + originalGrad*m_Lambda);
+
+    float norm = xp.GetNorm();
+    if(norm > m_StepSizeEst[threadId])
+      m_StepSizeEst[threadId] = norm;
+
+    xp = x - m_DualStepSize * xp;
 
     // normalize
-    xp /= (1+m_DualStepSize*grad.GetNorm());
+    //xp /= (1+m_DualStepSize*grad.GetNorm());
+    xp /= xp.GetNorm() + itk::NumericTraits<float>::min();
     for(size_t i=0; i<x.Size(); ++i)
     {
       if(std::isnan(xp[i])) 
@@ -125,8 +143,14 @@ ChambolleDualFilter< TInputImage, TOutputImage >
 ::AfterThreadedGenerateData()
 {
   m_Delta = 0;
+  m_DualStepSize = 0;
   for(size_t i=0; i<m_Deltas.size(); ++i)
+  {
     m_Delta += m_Deltas[i];
+    if(m_DualStepSize < m_StepSizeEst[i])
+      m_DualStepSize = m_StepSizeEst[i];
+  }
+  m_DualStepSize = 1/(2*m_DualStepSize + itk::NumericTraits<float>::min()); // step size for next iter
 }
 
 

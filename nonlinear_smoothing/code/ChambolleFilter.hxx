@@ -70,6 +70,7 @@ ChambolleFilter< TInputImage, TOutputImage >
   typename DualFilter::Pointer dualFilter = DualFilter::New();
   dualFilter->SetChambolle(this->GetChambolle());
   dualFilter->SetLambda(this->GetLambda());
+  dualFilter->SetDualStepSize(this->GetDualStepSize());
   dualFilter->SetInput(internal);
   dualFilter->SetNumberOfThreads(1);
 
@@ -94,18 +95,47 @@ ChambolleFilter< TInputImage, TOutputImage >
 
   for(m_Iters=0; m_Iters<GetMaxIters(); ++m_Iters)
   {
-    std::cerr << m_Iters << ": " << std::endl;
+    std::cerr << std::endl;
+    std::cerr << "================" << std::endl;
+    std::cerr << "outer iter: " << m_Iters << std::endl;
+    std::cerr << "================" << std::endl;
+
+    if(m_Iters>0)
+    {
+      gradFilter->SetInput(filterOutput);
+      gradFilter->Modified();
+      gradImage = gradFilter->GetOutput();
+      try
+      {
+        gradFilter->Update();
+      }
+      catch(itk::ExceptionObject e)
+      {
+        std::cerr << "Error running gradient filter: " << e << std::endl;
+        return;
+      }
+
+      divFilter->SetInput(gradImage);
+      divFilter->Modified();
+      divImage = divFilter->GetOutput();
+      try
+      {
+        divFilter->Update();
+      }
+      catch(itk::ExceptionObject e)
+      {
+        std::cerr << "Error running divergence filter: " << e << std::endl;
+        return;
+      }
+    }
  
     //for(size_t iters=0; iters<GetMaxIters(); ++iters)
-    for(size_t iters=0; iters<300; ++iters)
+    for(size_t iters=0; iters<1000; ++iters)
     {
-      // update steps sizes
-      float tau = GetDualStepSize();
-   
       dualFilter->Modified(); // force to run
-      dualFilter->SetDualStepSize(tau);
       dualFilter->SetX(gradImage);
       dualFilter->SetDiv(divImage);
+      if(m_Iters>0) dualFilter->SetInput(filterOutput); // set original to be output of primal step..
       try
       {
         //std::cerr << "running dual.." << std::endl;
@@ -158,7 +188,6 @@ ChambolleFilter< TInputImage, TOutputImage >
     if(m_Iters>0) primalFilter->SetInput(filterOutput);
     try
     {
-      std::cerr << "running primal.." << std::endl;
       primalFilter->Update();
     }
     catch(itk::ExceptionObject e)
@@ -174,7 +203,7 @@ ChambolleFilter< TInputImage, TOutputImage >
     {
       break;
     }
-    std::cerr << "delta: " << delta << std::endl;
+    std::cerr << "outer delta: " << delta << std::endl;
   }
 
   if(m_Iters < m_MaxIters)

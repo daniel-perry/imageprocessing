@@ -59,7 +59,7 @@ DivergenceFilter< TInputImage, TOutputImage >
         IndexType overOne = center;
         overOne[i] -= 1;
         GradientType gradOverOne = input->GetPixel(overOne);
-        div += gradOverOne[i] - grad[i];
+        div += grad[i] - gradOverOne[i];
       }
     }
     output->SetPixel( out.GetIndex(), -div );

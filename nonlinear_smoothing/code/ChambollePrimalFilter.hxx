@@ -63,16 +63,24 @@ ChambollePrimalFilter< TInputImage, TOutputImage >
     GradientType gradCenter = gradIt.Get();
     for(size_t i=0; i<gradCenter.Size(); ++i)
     {
-      if(!(center[i] == 0 || center[i] == size[i]-1)) // not on edge
+      IndexType overOne = center;
+      overOne[i] -= 1;
+      GradientType gradOverOne = m_X->GetPixel(overOne);
+      if(center[i] == 0)
       {
-        IndexType overOne = center;
-        overOne[i] -= 1;
-
-        GradientType gradOverOne = m_X->GetPixel(overOne);
-        div += gradOverOne[i] - gradCenter[i];
+        div += gradCenter[i]; // border case - see Chambolle's paper, p.2
       }
+      else if(center[i] == size[i]-1)
+      {
+        div += -gradOverOne[i]; // border case - see Chambolle's paper, p.2
+      }
+      else // not on border
+      {
+        div += gradCenter[i] - gradOverOne[i] ;
+      }
+ 
     }
-    div = -div; // we want the negative divergence
+    //div = -div; // we want the negative divergence
 
     ///////////////////////
     // Primal Step:
@@ -80,7 +88,7 @@ ChambollePrimalFilter< TInputImage, TOutputImage >
     PixelType tmp = y;
 
     //y = (1-m_PrimalStepSize) * y + m_PrimalStepSize * (originalIt.Get() - (1/m_Lambda) * div);
-    y = y + m_PrimalStepSize * div;
+    y = y + m_Lambda * div;
     if(std::isnan(y))
     {
       throw itk::ExceptionObject("NaN detected in Primal step");
