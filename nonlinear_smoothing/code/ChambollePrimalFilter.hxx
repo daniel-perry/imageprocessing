@@ -25,8 +25,6 @@ void
 ChambollePrimalFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
-  //typename InputImageType::ConstPointer input = this->GetInput();
-  //typename OutputImageType::Pointer output = this->GetOutput();
   if(m_Deltas.size() != this->GetNumberOfThreads())
     m_Deltas.resize( this->GetNumberOfThreads() );
   for(size_t i=0; i<m_Deltas.size(); ++i)
@@ -80,22 +78,17 @@ ChambollePrimalFilter< TInputImage, TOutputImage >
       }
  
     }
-    //div = -div; // we want the negative divergence
 
     ///////////////////////
     // Primal Step:
     PixelType y = it.Get();
     PixelType tmp = y;
 
-    //y = (1-m_PrimalStepSize) * y + m_PrimalStepSize * (originalIt.Get() - (1/m_Lambda) * div);
     y = y + m_Lambda * div;
     if(std::isnan(y))
     {
       throw itk::ExceptionObject("NaN detected in Primal step");
     }
-
-    //////////////////////
-    // Convergence criteria
 
     output->SetPixel( it.GetIndex(), y ); // save result
     m_Deltas[threadId] += fabs(tmp-y);
@@ -120,7 +113,6 @@ ChambollePrimalFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-  os << "Chambolle: " << m_Chambolle << std::endl;
 }
 
 } // end namespace

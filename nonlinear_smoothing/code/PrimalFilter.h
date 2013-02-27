@@ -55,12 +55,6 @@ public:
   typedef typename VectorImageType::Pointer VectorImagePointer;
   typedef typename VectorImageType::ConstPointer VectorImageConstPointer;
 
-  /** 
-   * Chambolle - whether to compute the TV using the
-   *   Chambolle method, instead of primal/dual (default).
-   */
-  itkSetMacro(Chambolle, bool);
-  itkGetConstMacro(Chambolle, bool);
   /**
    * Step size for primal solution.
    */
@@ -92,8 +86,7 @@ public:
 
 protected:
   PrimalFilter()
-  :m_Chambolle(false),
-  m_PrimalStepSize(1),
+  :m_PrimalStepSize(1),
   m_Lambda(1),
   m_Delta(10e10),
   m_X(),
@@ -115,7 +108,6 @@ private:
   PrimalFilter(const Self &); // not allowed
   void operator=(const Self &); // not allowed 
 
-  bool m_Chambolle;
   float m_PrimalStepSize;
   float m_Lambda;
   float m_Delta;

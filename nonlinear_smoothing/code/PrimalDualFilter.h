@@ -50,12 +50,6 @@ public:
   typedef typename OutputImageType::RegionType OutputImageRegionType;
   typedef typename InputImageType::SizeType ImageSizeType;
 
-  /** 
-   * Chambolle - whether to compute the TV using the
-   *   Chambolle method, instead of primal/dual (default).
-   */
-  itkSetMacro(Chambolle, bool);
-  itkGetConstMacro(Chambolle, bool);
   /**
    * Step size for dual solution.
    */
@@ -89,8 +83,7 @@ public:
 
 protected:
   PrimalDualFilter()
-  :m_Chambolle(false),
-  m_DualStepSize(1),
+  :m_DualStepSize(1),
   m_Lambda(1),
   m_MaxIters(100),
   m_Iters(0),
@@ -106,7 +99,6 @@ private:
   PrimalDualFilter(const Self &); // not allowed
   void operator=(const Self &); // not allowed 
 
-  bool m_Chambolle;
   float m_DualStepSize;
   float m_Lambda;
   size_t m_MaxIters;

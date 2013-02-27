@@ -100,7 +100,6 @@ ChambolleDualFilter< TInputImage, TOutputImage >
       {
         IndexType overOne = center;
         overOne[i] += 1;
-        //grad[i] = (m_Div->GetPixel(overOne) - m_Lambda*(input->GetPixel(overOne))) - (divIt.Get() - m_Lambda*it.Get());
         grad[i] = m_Div->GetPixel(overOne) - divIt.Get();
 
         originalGrad[i] = input->GetPixel(overOne) - it.Get();
@@ -111,7 +110,6 @@ ChambolleDualFilter< TInputImage, TOutputImage >
     ///////////////////////
     // Dual Step:
     GradientType x = gradIt.Get();
-    //GradientType xp = x - m_DualStepSize * grad;
     GradientType xp = (grad + originalGrad*m_Lambda);
 
     float norm = xp.GetNorm();
@@ -121,7 +119,6 @@ ChambolleDualFilter< TInputImage, TOutputImage >
     xp = x - m_DualStepSize * xp;
 
     // normalize
-    //xp /= (1+m_DualStepSize*grad.GetNorm());
     xp /= xp.GetNorm() + itk::NumericTraits<float>::min();
     for(size_t i=0; i<x.Size(); ++i)
     {
@@ -160,7 +157,6 @@ ChambolleDualFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-  os << "Chambolle: " << m_Chambolle << std::endl;
 }
 
 } // end namespace

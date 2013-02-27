@@ -53,8 +53,6 @@ void
 DualFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
-  //typename InputImageType::ConstPointer input = this->GetInput();
-  //typename OutputImageType::Pointer output = this->GetOutput();
   m_Deltas.resize( this->GetNumberOfThreads() );
 }
 
@@ -97,12 +95,11 @@ DualFilter< TInputImage, TOutputImage >
         grad[i] = input->GetPixel(overOne) - it.Get();
       }
     }
-    grad = -grad;
+    grad = -grad; // we want the negative gradient
 
     ///////////////////////
     // Dual Step:
     GradientType x = gradIt.Get();
-    //std::cerr << "dual coefficient: " << m_DualStepSize * m_Lambda << std::endl; // debug
     GradientType xp = x + m_DualStepSize * m_Lambda * grad;
 
     // project onto X (see Remark 2 on p. 10)
@@ -123,12 +120,6 @@ DualFilter< TInputImage, TOutputImage >
     }
 
     m_Deltas[threadId] += (xp-x).GetNorm();
-
-    /*
-    {//debug
-    std::cerr << center << ": " << x << " (" << x.GetNorm() << ")" << std::endl;
-    }
-    */
 
     m_X->SetPixel( gradIt.GetIndex(), xp ); // save result
   }
@@ -151,7 +142,6 @@ DualFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-  os << "Chambolle: " << m_Chambolle << std::endl;
 }
 
 } // end namespace

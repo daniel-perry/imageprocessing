@@ -25,8 +25,6 @@ void
 PrimalFilter< TInputImage, TOutputImage >
 ::BeforeThreadedGenerateData()
 {
-  //typename InputImageType::ConstPointer input = this->GetInput();
-  //typename OutputImageType::Pointer output = this->GetOutput();
   if(m_Deltas.size() != this->GetNumberOfThreads())
     m_Deltas.resize( this->GetNumberOfThreads() );
   for(size_t i=0; i<m_Deltas.size(); ++i)
@@ -69,35 +67,20 @@ PrimalFilter< TInputImage, TOutputImage >
         overOne[i] -= 1;
 
         GradientType gradOverOne = m_X->GetPixel(overOne);
-        div += gradOverOne[i] - gradCenter[i];
+        div += gradCenter[i] - gradOverOne[i];
       }
     }
-    div = -div; // we want the negative divergence
 
     ///////////////////////
     // Primal Step:
     PixelType y = it.Get();
     PixelType tmp = y;
-    /*
-    { // debug
-    std::cerr << center << ": " <<std::endl;
-    std::cerr << "y = (1-"<<m_PrimalStepSize<<") * "<<y<<" + "<<m_PrimalStepSize<<" * ("<<originalIt.Get()<<" - (1/"<<m_Lambda<<") * "<<div<<")"<<std::endl<<"  = ";
-    }
-    std::cerr << "primal coefficients: " << m_PrimalStepSize << " , " << (1/m_Lambda) << std::endl;
-    */
+
     y = (1-m_PrimalStepSize) * y + m_PrimalStepSize * (originalIt.Get() - (1/m_Lambda) * div);
     if(std::isnan(y))
     {
       throw itk::ExceptionObject("NaN detected in Primal step");
     }
-    /*
-    { //debug
-    std::cerr << y << std::endl;
-    }
-    */
-
-    //////////////////////
-    // Convergence criteria
 
     output->SetPixel( it.GetIndex(), y ); // save result
     m_Deltas[threadId] += fabs(tmp-y);
@@ -122,7 +105,6 @@ PrimalFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-  os << "Chambolle: " << m_Chambolle << std::endl;
 }
 
 } // end namespace

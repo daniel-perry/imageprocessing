@@ -68,7 +68,6 @@ ChambolleFilter< TInputImage, TOutputImage >
 
   typedef ChambolleDualFilter<InternalImageType> DualFilter;
   typename DualFilter::Pointer dualFilter = DualFilter::New();
-  dualFilter->SetChambolle(this->GetChambolle());
   dualFilter->SetLambda(this->GetLambda());
   dualFilter->SetDualStepSize(this->GetDualStepSize());
   dualFilter->SetInput(internal);
@@ -76,7 +75,6 @@ ChambolleFilter< TInputImage, TOutputImage >
 
   typedef ChambollePrimalFilter<InternalImageType> PrimalFilter;
   typename PrimalFilter::Pointer primalFilter = PrimalFilter::New();
-  primalFilter->SetChambolle(this->GetChambolle());
   primalFilter->SetLambda(this->GetLambda());
   primalFilter->SetInput(internal);
   primalFilter->SetOriginalImage(internal);
@@ -129,7 +127,6 @@ ChambolleFilter< TInputImage, TOutputImage >
       }
     }
  
-    //for(size_t iters=0; iters<GetMaxIters(); ++iters)
     for(size_t iters=0; iters<1000; ++iters)
     {
       dualFilter->Modified(); // force to run
@@ -138,7 +135,6 @@ ChambolleFilter< TInputImage, TOutputImage >
       if(m_Iters>0) dualFilter->SetInput(filterOutput); // set original to be output of primal step..
       try
       {
-        //std::cerr << "running dual.." << std::endl;
         dualFilter->Update();
       }
       catch(itk::ExceptionObject e)
@@ -182,7 +178,6 @@ ChambolleFilter< TInputImage, TOutputImage >
     std::cerr << "inner delta: " << innerDelta << std::endl;
 
     primalFilter->Modified(); // force to run
-    //float theta = (0.5 - (5/(15+m_Iters)))/tau;
     primalFilter->SetPrimalStepSize(1); // theta = 1
     primalFilter->SetX(dualFilter->GetX());
     if(m_Iters>0) primalFilter->SetInput(filterOutput);
@@ -210,32 +205,15 @@ ChambolleFilter< TInputImage, TOutputImage >
   {
     std::cerr << "converged in " << m_Iters << " iterations." << std::endl;
   }
-  else
-  {
-    std::cerr << "warning: iters exceeded max iters, did not converge." << std::endl;
-  }
-
-  { // debug
-    typedef itk::ImageFileWriter<InternalImageType> TmpWriter;
-    typename TmpWriter::Pointer tmpwriter = TmpWriter::New();
-    tmpwriter->SetInput(filterOutput);
-    tmpwriter->SetFileName("tmp_filterout.nrrd");
-    tmpwriter->Update();
-  }
+  //else
+  //{
+  //  std::cerr << "warning: iters exceeded max iters, did not converge." << std::endl;
+  //}
 
   typename OutputImageType::Pointer output = this->GetOutput();
   output->SetRegions(input->GetLargestPossibleRegion());
   output->Allocate();
   DeepCopy<InternalImageType,OutputImageType>(filterOutput,output); // need to convert to unsigned char.
-  /*
-  // set output to be tv filter output
-  output->SetOrigin(filterOutput->GetOrigin());
-  output->SetSpacing(filterOutput->GetSpacing());
-  output->SetLargestPossibleRegion(filterOutput->GetLargestPossibleRegion());
-  output->SetBufferedRegion(filterOutput->GetBufferedRegion());
-  output->SetRequestedRegion(filterOutput->GetRequestedRegion());
-  output->SetPixelContainer(filterOutput->GetPixelContainer());
-  */
 }
 
 template< class TInputImage, class TOutputImage >
@@ -244,7 +222,6 @@ ChambolleFilter< TInputImage, TOutputImage >
 ::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-  os << "Chambolle: " << m_Chambolle << std::endl;
 }
 
 } // end namespace
