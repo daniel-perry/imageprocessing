@@ -31,14 +31,30 @@ SET( tv_SRCS
 )
 
 SET( tv_HDRS
-  TotalVariationPrimalFilter.h
-  TotalVariationPrimalFilter.hxx
-  TotalVariationDualFilter.h
-  TotalVariationDualFilter.hxx
-  TotalVariationImageFilter.h
-  TotalVariationImageFilter.hxx
+  PrimalFilter.h
+  PrimalFilter.hxx
+  DualFilter.h
+  DualFilter.hxx
+  PrimalDualFilter.h
+  PrimalDualFilter.hxx
   UnitGradientFilter.h
   UnitGradientFilter.hxx
+  ChambolleFilter.h
+  ChambolleFilter.hxx
+  ChambollePrimalFilter.h
+  ChambollePrimalFilter.hxx
+  ChambolleDualFilter.h
+  ChambolleDualFilter.hxx
+  DivergenceFilter.h
+  DivergenceFilter.hxx
+  SplitBregmanFilter.h
+  SplitBregmanFilter.hxx
+  GaussSeidelFilter.h
+  GaussSeidelFilter.hxx
+  ShrinkBregmanFilter.h
+  ShrinkBregmanFilter.hxx
+  GradientFilter.h
+  GradientFilter.hxx
   DeepCopy.h
 )
 

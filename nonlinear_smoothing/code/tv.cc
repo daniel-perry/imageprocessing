@@ -14,15 +14,19 @@
 // local includes
 #include "PrimalDualFilter.h"
 #include "ChambolleFilter.h"
+#include "SplitBregmanFilter.h"
 using imageprocessing::PrimalDualFilter;
 using imageprocessing::ChambolleFilter;
+using imageprocessing::SplitBregmanFilter;
 
 int main(int argc, char * argv[] )
 {
   if(argc < 2)
   {
-    std::cerr << "usage: " << argv[0] << " <in.png> <out.png> <lambda> <dual-step> <iters> <threads> [chambolle-flag]" << std::endl;
-    std::cerr << "note: chambolle-flag=1 means use chambolled instead of primal-dual" << std::endl;
+    std::cerr << "usage: " << argv[0] << " <in.png> <out.png> <lambda> <dual-step> <iters> <threads> [algorithm-flag]" << std::endl;
+    std::cerr << "note: algorithm-flag = 0 -> primal-dual (default)" << std::endl
+              << "                       1 -> chambolle" << std::endl
+              << "                       2 -> split-bregman (anisotropic)" << std::endl;
     return 1;
   }
 
@@ -32,10 +36,10 @@ int main(int argc, char * argv[] )
   float dualStep = atof(argv[4]);
   size_t iters = atoi(argv[5]);
   size_t threads = atoi(argv[6]);
-  bool chambolleFlag = 0;
+  int chambolleFlag = 0;
   if(argc > 7)
   {
-    chambolleFlag = atoi(argv[7]) == 1;
+    chambolleFlag = atoi(argv[7]);
   }
 
   const size_t Dimension = 2;
@@ -59,7 +63,7 @@ int main(int argc, char * argv[] )
 
   // run filter:
   ImageType::Pointer output;
-  if(chambolleFlag)
+  if(chambolleFlag == 1)
   {
     typedef ChambolleFilter<ImageType> TVFilter;
     TVFilter::Pointer tv = TVFilter::New();
@@ -79,7 +83,26 @@ int main(int argc, char * argv[] )
       return 1;
     }
   }
-  else
+  else if(chambolleFlag == 2)
+  {
+    typedef SplitBregmanFilter<ImageType> TVFilter;
+    TVFilter::Pointer tv = TVFilter::New();
+    tv->SetMu(lambda);
+    tv->SetMaxIters(iters);
+    tv->SetInput(input);
+    tv->SetThreadCount(threads);
+    output = tv->GetOutput();
+    try
+    {
+      tv->Update();
+    }
+    catch(itk::ExceptionObject e)
+    {
+      std::cerr << "Error running TV filter :" << e << std::endl;
+      return 1;
+    }
+  }
+  else // default = primal-dual
   {
     typedef PrimalDualFilter<ImageType> TVFilter;
     TVFilter::Pointer tv = TVFilter::New();
