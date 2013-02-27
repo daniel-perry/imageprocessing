@@ -137,7 +137,7 @@ SplitBregmanFilter< TInputImage, TOutputImage >
     bregmanImage = shrinkFilter->GetBregman();
     shrinkImage = shrinkFilter->GetOutput();
   }
-  if(m_Iters < m_MaxIters)
+  if(m_Iters < GetMaxIters())
   {
     std::cerr << "converged in " << m_Iters << " iterations." << std::endl;
   }

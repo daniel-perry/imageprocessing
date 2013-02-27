@@ -1,0 +1,148 @@
+\documentclass[11pt]{article}
+%\usepackage{fullpage,url}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\usepackage[letterpaper,top=1in,bottom=1in,left=1in,right=1in,nohead]{geometry}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{6pt}
+\bibliographystyle{plain}
+
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Unif}{Unif}
+
+\begin{document}
+\thispagestyle{empty}
+{\large{\bf CS7640: Advanced Image Processing \hfill Danny Perry}}\\
+
+{\LARGE{\bf Non-linear Image Denoising}}
+\vspace{0.2\baselineskip}
+\hrule
+
+\section{Introduction}
+One of the classic problems in image analysis is image denoising.
+We are interested in the specific approaches to image denoising that preserve edges.
+A classic approach to edge-preserving non-linear denoising was introduced by \cite{perona1990scale}, where edge preservation was achieved by modeling the problem as an anisotropic diffusion problem.
+Later work in \cite{rudin1992nonlinear} introduced the so called "ROF Model" where edge-preserving denoising could be done my minimizing the total variation of the image.
+Total variation minimization is based on the principle that noisy images have high total variation, which is the integral of the norm of the gradient.  
+By reducing the total variation subject to being a close match to the original image removes unwanted detail (hopefully noise), while preserving important details like edges \cite{wikiTV}.
+
+Here we evaluate three popular algorithms in minimization of total variation:
+\begin{enumerate}
+\item TV using Chambolle's Algorithm
+\item TV using Primal-Dual Algorithm
+\item Anisotropic TV using Split-Bregman Iterations
+\end{enumerate}
+
+\section{Methods}
+Here we briefly describe the specific motivation for each algorithm, how they work in theory, and the specific engineering decisions used in the implementations.
+\subsection{Total Variation Minimization}
+Here we motivate and describe the method of total variation.
+As briefly described above varation can be described like so:
+\begin{equation*}
+\int |\nabla u| dx dy
+\end{equation*}
+Where we want to minimize the varation while maintaining some similarity with the original image, we hope to minimize the following constrained problem:
+\begin{equation*}
+\min \int |\nabla u| dx dy \text{ s.t.} \int (u-u_0)^2 dxdy = \sigma^2
+\end{equation*}
+This specific formulation is referred to colloquially as the ROF model.
+When originally presented in \cite{rudin1992nonlinear}, a gradient descent type algorithm was suggested to minimize the Euler-Lagrange equations of the problem.
+While the results were good, the specific algorithm for solving it was numerically difficult, due to the possibility of $|\nabla u|=0$.
+Later work, presented below attempted to improve on that approach.
+
+\subsection{Chambolle's Algorithm}
+In \cite{chambolle2004algorithm} a new formulation was presented introducing a so called "dual problem", which addressed the possible zero gradients by changing the formulation into a constrained maximization problem, ie
+\begin{align*}
+\int |\nabla u| dx xy &= \max_{|p| \le 1} \int p \nabla u dx dy \\
+&= \max_{|p| \le 1} \int (\nabla \cdot p) u dx dy
+\end{align*}
+The second equation is obtained via integration by parts.  
+In this form, the problem can be solved in a two-step approach:
+\begin{enumerate}
+\item
+Gradient descent to maximize $p$:
+\begin{equation}
+p^{k+1} = p^{k} - \Delta t \left[ \nabla( \nabla \cdot p^{k}) + \lambda \nabla u_0 \right]
+\label{ch:dual}
+\end{equation}
+\item Solution to the tv minimization:
+\begin{equation}
+u = f + \lambda \nabla \cdot \hat{p}
+\label{ch:primal}
+\end{equation}
+\end{enumerate}
+In practice this two step approach is repeated until desirable results are reached.
+
+Here the implementation was done entirely in C++ using the ITK framework.
+ITK was used primarily for image and vector data structures, I/O, and some infrastructure for parallelization.
+Any actual numerics were rewritten for this project, including gradient and divergence operations.
+A reader interested in following the code would be directed to primarily read the respective "GenerateData()" and "ThreadedGenerateData()" methods of the .hxx files of the classes described below, as that is where the action takes place - the rest is infrastructure.
+
+In order to parallelize the algorithm, it was decomposed into a few distinct parallel steps over the image, with a single threaded iteration loop.  
+The structure follows directly the algorithm structure:
+\begin{enumerate}
+\item
+ChambolleFilter.h,.hxx - the main loop
+\item
+ChambolleDualFilter.h,.hxx - the parallel dual solution
+\item
+ChambollePrimalFilter.h,.hxx - the parallel primal solution \\
+DivergenceFilter.h,.hxx - the parallel divergence computation \\
+UnitGradientFilter.h,.hxx - the parallel unit gradient computation
+\end{enumerate}
+
+As discussed in class, I found it important to "balance" the one-sided derivatives used, so that the result ended up "on the grid" and not in the "gap".
+For example, in this solution I use a "right-sided" difference for the gradient and a "left-sided" difference for the divergence.
+
+The implementation was done primarily from in class notes, which some details taken from the original paper.
+
+It's also worth noting that because of the double loop needed to obtain quality results, this algorithm is the slowest of the three algorithms investigated.
+Specific results will be discussed below.
+
+\subsection{Primal-Dual Algorithm}
+A more efficient solution to the primal and dual problems called the Primal-Dual algorithm was described in \cite{zhu2008efficient}.
+Instead of solving the dual problem to completion (\ref{ch:dual}) and then using that solution in the primal (\ref{ch:primal}), the Primal-Dual algorithm solves both problems simultaneously in a sort of combined gradient descent.
+
+In a single main iteration two steps are used to find the solution to the primal and dual equations:
+\begin{enumerate}
+\item Dual step:
+\begin{equation}
+p^{k+1} = P_p(p^k + \tau_k \lambda A^T u^k)
+\label{pd:dual}
+\end{equation}
+Where $P_p(z)$ is the projection back onto $p$.
+\item Primal step:
+\begin{equation}
+u^{k+1} = u^k - \theta_k (1/\lambda Ap^{k+1} + u^k-u_0)
+\label{pd:primal}
+\end{equation}
+\end{enumerate}
+
+Again, this was implemented in a parallel fashion using C++ and ITK.
+A single thread loop controlled the main iteration, while separate parallel processes compute each step.
+Here is the specific break down:
+\begin{enumerate}
+\item PrimalDualFilter.h,.hxx - the main loop
+\item DualFilter.h,.hxx - the 
+\item PrimalFilter.h,.hxx - the parallel primal step
+\end{enumerate}
+
+
+\subsection{Split-Bregman Algorithm}
+
+\section{Results}
+\subsection{Chambolle's Algorithm}
+\subsection{Primal-Dual Algorithm}
+\subsection{Split-Bregman Algorithm}
+
+\section{Discussion}
+
+\section{Conclusion}
+
+\bibliography{nonlinear_smoothing}
+
+\end{document}
