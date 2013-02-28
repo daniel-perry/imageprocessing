@@ -332,7 +332,7 @@ I chose $\lambda=0.0415$.
 The Primal-Dual paper suggested a way of estimating $\lambda$, but instead I've just used one of the values they reported, which seems to have performed fine.
 I chose the initial $\tau=0.2$, where $\tau$ and $\theta$ were updated each time step using the the following formulas:
 \begin{align*}
-\tau &= 0.2 + k*0.08
+\tau &= 0.2 + k*0.08 \\
 \theta &= (0.5 + 5/(15+k))/\tau
 \end{align*}
 
