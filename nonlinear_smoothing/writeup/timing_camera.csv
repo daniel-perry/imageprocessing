@@ -1,0 +1,4 @@
+algorithm,runtime
+chambolle,11.45
+primal-dual,0.69
+split-bregman,0.22

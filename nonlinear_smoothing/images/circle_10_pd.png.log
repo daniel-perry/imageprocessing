@@ -1,0 +1,205 @@
+time -ao ../images/circle_10_pd.png.log ./run_pd.sh ../images/circle_10.png ../images/circle_10_pd.png 50 1
+lambda: .0415
+tau: 0.2
+0: 
+running dual..
+running primal..
+delta: 2.29533e+07
+1: 
+running dual..
+running primal..
+delta: 6.73018e+07
+2: 
+running dual..
+running primal..
+delta: 8.5051e+07
+3: 
+running dual..
+running primal..
+delta: 6.59254e+07
+4: 
+running dual..
+running primal..
+delta: 4.19159e+07
+5: 
+running dual..
+running primal..
+delta: 2.94074e+07
+6: 
+running dual..
+running primal..
+delta: 2.30478e+07
+7: 
+running dual..
+running primal..
+delta: 1.97918e+07
+8: 
+running dual..
+running primal..
+delta: 1.69187e+07
+9: 
+running dual..
+running primal..
+delta: 1.5154e+07
+10: 
+running dual..
+running primal..
+delta: 1.33051e+07
+11: 
+running dual..
+running primal..
+delta: 1.21505e+07
+12: 
+running dual..
+running primal..
+delta: 1.09375e+07
+13: 
+running dual..
+running primal..
+delta: 1.00957e+07
+14: 
+running dual..
+running primal..
+delta: 9.2368e+06
+15: 
+running dual..
+running primal..
+delta: 8.61372e+06
+16: 
+running dual..
+running primal..
+delta: 7.9921e+06
+17: 
+running dual..
+running primal..
+delta: 7.50396e+06
+18: 
+running dual..
+running primal..
+delta: 7.013e+06
+19: 
+running dual..
+running primal..
+delta: 6.63089e+06
+20: 
+running dual..
+running primal..
+delta: 6.25947e+06
+21: 
+running dual..
+running primal..
+delta: 5.94412e+06
+22: 
+running dual..
+running primal..
+delta: 5.62686e+06
+23: 
+running dual..
+running primal..
+delta: 5.3657e+06
+24: 
+running dual..
+running primal..
+delta: 5.12057e+06
+25: 
+running dual..
+running primal..
+delta: 4.90171e+06
+26: 
+running dual..
+running primal..
+delta: 4.68171e+06
+27: 
+running dual..
+running primal..
+delta: 4.49113e+06
+28: 
+running dual..
+running primal..
+delta: 4.31218e+06
+29: 
+running dual..
+running primal..
+delta: 4.14796e+06
+30: 
+running dual..
+running primal..
+delta: 3.9841e+06
+31: 
+running dual..
+running primal..
+delta: 3.83961e+06
+32: 
+running dual..
+running primal..
+delta: 3.70617e+06
+33: 
+running dual..
+running primal..
+delta: 3.58076e+06
+34: 
+running dual..
+running primal..
+delta: 3.45407e+06
+35: 
+running dual..
+running primal..
+delta: 3.34056e+06
+36: 
+running dual..
+running primal..
+delta: 3.23695e+06
+37: 
+running dual..
+running primal..
+delta: 3.13891e+06
+38: 
+running dual..
+running primal..
+delta: 3.03992e+06
+39: 
+running dual..
+running primal..
+delta: 2.94894e+06
+40: 
+running dual..
+running primal..
+delta: 2.86482e+06
+41: 
+running dual..
+running primal..
+delta: 2.78617e+06
+42: 
+running dual..
+running primal..
+delta: 2.70894e+06
+43: 
+running dual..
+running primal..
+delta: 2.63728e+06
+44: 
+running dual..
+running primal..
+delta: 2.5695e+06
+45: 
+running dual..
+running primal..
+delta: 2.50488e+06
+46: 
+running dual..
+running primal..
+delta: 2.44059e+06
+47: 
+running dual..
+running primal..
+delta: 2.38073e+06
+48: 
+running dual..
+running primal..
+delta: 2.32441e+06
+49: 
+running dual..
+running primal..
+delta: 2.27129e+06
+0.66user 0.01system 0:00.69elapsed 97%CPU (0avgtext+0avgdata 53536maxresident)k
+0inputs+272outputs (0major+4249minor)pagefaults 0swaps

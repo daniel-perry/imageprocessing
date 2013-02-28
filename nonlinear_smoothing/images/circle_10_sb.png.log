@@ -1,0 +1,46 @@
+time -ao ../images/circle_10_sb.png.log ./run_sb.sh ../images/circle_10.png ../images/circle_10_sb.png 20 1
+mu: 0.1
+./tv ../images/circle_10.png ../images/circle_10_sb.png 0.1 1 20 1 2
+0: 
+delta: 2.10613e+06
+1: 
+delta: 3.19393e+06
+2: 
+delta: 3.85734e+06
+3: 
+delta: 4.26349e+06
+4: 
+delta: 4.54554e+06
+5: 
+delta: 4.7545e+06
+6: 
+delta: 4.91396e+06
+7: 
+delta: 5.0378e+06
+8: 
+delta: 5.13472e+06
+9: 
+delta: 5.21091e+06
+10: 
+delta: 5.27001e+06
+11: 
+delta: 5.31548e+06
+12: 
+delta: 5.35052e+06
+13: 
+delta: 5.37681e+06
+14: 
+delta: 5.39599e+06
+15: 
+delta: 5.40975e+06
+16: 
+delta: 5.41924e+06
+17: 
+delta: 5.42552e+06
+18: 
+delta: 5.42948e+06
+19: 
+delta: 5.43187e+06
+converged in 19 iterations.
+0.37user 0.00system 0:00.39elapsed 96%CPU (0avgtext+0avgdata 79936maxresident)k
+0inputs+56outputs (0major+5942minor)pagefaults 0swaps

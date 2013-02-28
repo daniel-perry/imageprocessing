@@ -1,0 +1,26 @@
+time -ao ../images/sailboat_10_sb.png.log ./run_sb.sh ../images/sailboat_10.png ../images/sailboat_10_sb.png 10 1
+mu: 0.1
+./tv ../images/sailboat_10.png ../images/sailboat_10_sb.png 0.1 1 10 1 2
+0: 
+delta: 1.50231e+06
+1: 
+delta: 2.23064e+06
+2: 
+delta: 2.65515e+06
+3: 
+delta: 2.90853e+06
+4: 
+delta: 3.0825e+06
+5: 
+delta: 3.20918e+06
+6: 
+delta: 3.30376e+06
+7: 
+delta: 3.37563e+06
+8: 
+delta: 3.43091e+06
+9: 
+delta: 3.47371e+06
+converged in 9 iterations.
+0.15user 0.00system 0:00.17elapsed 91%CPU (0avgtext+0avgdata 68048maxresident)k
+0inputs+104outputs (0major+5151minor)pagefaults 0swaps

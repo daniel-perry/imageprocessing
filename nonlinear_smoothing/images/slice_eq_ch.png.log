@@ -1,0 +1,155 @@
+time -ao ../images/slice_eq_ch.png.log ./run_ch.sh ../images/slice_eq.png ../images/slice_eq_ch.png 10 1
+lambda: 0.248
+tau: 0.0001
+./tv ../images/slice_eq.png ../images/slice_eq_ch.png 0.248 0.0001 10 1 1
+
+================
+outer iter: 0
+================
+
+inner delta: 2983.61
+frob norm of div: 1034.86
+..................................................
+inner delta: 13947.1
+frob norm of div: 888.971
+..................................................
+inner delta: 4107.59
+frob norm of div: 954.538
+..................................................
+inner delta: 1693.35
+frob norm of div: 970.947
+..................................................
+inner delta: 877.783
+frob norm of div: 976.08
+..................................................
+inner delta: 521.385
+frob norm of div: 978.189
+...................inner converged!
+
+inner delta: 438.868
+outer delta: 132257
+
+================
+outer iter: 1
+================
+
+inner delta: 3102.21
+frob norm of div: 1045.76
+..................................................
+inner delta: 13222.8
+frob norm of div: 903.344
+..................................................
+inner delta: 3904.08
+frob norm of div: 962.063
+..................................................
+inner delta: 1629.44
+frob norm of div: 975.948
+..................................................
+inner delta: 852.74
+frob norm of div: 979.845
+..................................................
+inner delta: 497.241
+frob norm of div: 981.238
+.............inner converged!
+
+inner delta: 438.175
+outer delta: 132925
+
+================
+outer iter: 2
+================
+
+inner delta: 3626.76
+frob norm of div: 1053.34
+..................................................
+inner delta: 1833.78
+frob norm of div: 955.17
+..................................................
+inner delta: 817
+frob norm of div: 879.459
+..................................................
+inner delta: 1887.83
+frob norm of div: 826.139
+.inner converged!
+
+inner delta: 3
+outer delta: 107477
+
+================
+outer iter: 3
+================
+
+inner delta: 1811.69
+frob norm of div: 826.53
+.inner converged!
+
+inner delta: 3
+outer delta: 107334
+
+================
+outer iter: 4
+================
+
+inner delta: 1770.49
+frob norm of div: 823.933
+.inner converged!
+
+inner delta: 3
+outer delta: 106853
+
+================
+outer iter: 5
+================
+
+inner delta: 1809.81
+frob norm of div: 822.469
+.inner converged!
+
+inner delta: 3
+outer delta: 106472
+
+================
+outer iter: 6
+================
+
+inner delta: 1785.15
+frob norm of div: 820.55
+.inner converged!
+
+inner delta: 3
+outer delta: 106109
+
+================
+outer iter: 7
+================
+
+inner delta: 1795.34
+frob norm of div: 817.983
+.inner converged!
+
+inner delta: 3
+outer delta: 105597
+
+================
+outer iter: 8
+================
+
+inner delta: 1779.82
+frob norm of div: 816.028
+.inner converged!
+
+inner delta: 3
+outer delta: 105203
+
+================
+outer iter: 9
+================
+
+inner delta: 1800.27
+frob norm of div: 814.461
+.inner converged!
+
+inner delta: 3
+outer delta: 104806
+24.20user 0.02system 0:24.31elapsed 99%CPU (0avgtext+0avgdata 74096maxresident)k
+0inputs+560outputs (0major+5188minor)pagefaults 0swaps

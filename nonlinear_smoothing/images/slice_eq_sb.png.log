@@ -1,0 +1,26 @@
+time -ao ../images/slice_eq_sb.png.log ./run_sb.sh ../images/slice_eq.png ../images/slice_eq_sb.png 10 1
+mu: 0.1
+./tv ../images/slice_eq.png ../images/slice_eq_sb.png 0.1 1 10 1 2
+0: 
+delta: 1.22298e+07
+1: 
+delta: 1.37828e+07
+2: 
+delta: 1.47834e+07
+3: 
+delta: 1.56064e+07
+4: 
+delta: 1.63064e+07
+5: 
+delta: 1.68935e+07
+6: 
+delta: 1.7368e+07
+7: 
+delta: 1.77669e+07
+8: 
+delta: 1.80998e+07
+9: 
+delta: 1.83749e+07
+converged in 9 iterations.
+0.33user 0.01system 0:00.36elapsed 95%CPU (0avgtext+0avgdata 113648maxresident)k
+0inputs+616outputs (0major+6753minor)pagefaults 0swaps
