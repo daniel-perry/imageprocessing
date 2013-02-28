@@ -3,6 +3,8 @@
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \usepackage[letterpaper,top=1in,bottom=1in,left=1in,right=1in,nohead]{geometry}
 
@@ -195,16 +197,287 @@ To parallelize this code, I broke the algorithm into two distinct parallel steps
 GradientFilter.h,.hxx - a parallel gradient filter
 \end{enumerate}
 
-This code was mainly implemented using the original paper \cite{goldstein2009split}, I also got a few details like edge conditions, etc. from Goldsteins implementation available for download at his website \cite{goldsteinImplmentation}.
+This code was mainly implemented using the original paper \cite{goldstein2009split}, however a few details like edge conditions, etc. I obtained from Goldsteins implementation available for download at his website \cite{goldsteinImplementation}.
 
 \section{Results}
+
+Each algorithm was run against several images.  
+The results of three of those images are show below: the cameara man image (Figures \ref{fig:cameraman:dn},\ref{fig:cameraman:diff}), a sailboat image (Figures \ref{fig:sailboat:dn},\ref{fig:sailboat:diff}), and a slice of a seismic image (Figure \ref{fig:slice:dn}).
+
+For the cameraman and sailboat images Gaussian noise with $\sigma^2=100$ was added to the image.
+This was done to make the denoising effect more apparent.
+
+For the slice of seismic volume, the image was equalized to bring out the horizons.
+Denoising was applied with the goal of making the horizons appear more continuous.
+The seismic image is a slice taken from the Netherlands data set found on the OpendTect data repository \cite{opendTectWeb}.
+
 \subsection{Chambolle's Algorithm}
+
+Chambolle's algorithm was the slowest of the algorithms by far - mostly due to it's use of two loops.  
+The bar graph in Figure \ref{fig:timing} details the speed comparison.
+While Primal-Dual and Split-Bregman were comparable, both performed much faster than Chambolle.
+
+As mentioned before, Chambolle's main cost are the double loops.
+The inner loop would normally take about 200-300 iterations to converge for the first few outer loop iterations, then it would take only a few iterations (under 10) to converge for the remaining outer loop iterations.
+Convergence criteria of the inner loop was computed using the difference of result with the previous - when the result started converging less than an epsilon, the loop was terminated.
+
+The outer loop would converge in about 10-20 iterations.
+Visual correctness was used to determine convergence of the outer loop.
+The resulting total iterations required usually came to about 1000 iterations, which is the big reason for Chambolle's poor speed.
+
+
+The quality of Chambolle's algorithm is good.  
+It would be difficult to argue whether the results are much better or worse than from the other algorithms. 
+For example Figures \ref{sail:ch},\ref{sail:ch:diff} show the result and difference from noisy image of Chambolle's method.  As you can see the result looks good and the difference image isn't obviously better than the other difference images.
+
+Numerically, Chambolle was the trickiest to get right.
+With certain step sizes, it is quite easy for Chambolle's algorithm to blow up and not converge.
+
+For these experiments I chose a $\lambda=0.248$ as recommended in the Primal-Dual paper \cite{zhu2008efficient}.
+I also used an initial dual step size of $\Delta t = 0.0001$, but then updated that step size each iteration as described below.
+The dual step size was chosen proportional to the maximum gradient of the divergence of $p$, as indicated in class.
+In other words, take the maximum:
+\begin{equation*}
+\max q = |\nabla(\nabla \cdot p) + \lambda \nabla u_0|
+\end{equation*}
+Then the step size was:
+\begin{equation*}
+\Delta t = \frac{1}{2q}
+\end{equation*}
+
+
+
+\begin{figure}
+\centering
+\graphicspath{{images/}}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{sailboat_10}
+\caption{Noisy}
+\label{sail:noise}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{sailboat_10_ch}
+\caption{Chambolle's}
+\label{sail:ch}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{sailboat_10_pd}
+\caption{Primal-Dual}
+\label{sail:pd}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{sailboat_10_sb}
+\caption{Split-Bregman}
+\label{sail:sb}
+\end{subfigure}
+\caption{Results of each algorithm on a noisy image of a sailboat.}
+\label{fig:sailboat:dn}
+\end{figure}
+
+\begin{figure}
+\centering
+\graphicspath{{images/}}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{sail_gauss_diff}
+\caption{Gaussian blur}
+\label{sail:gauss:diff}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{sail_ch_diff}
+\caption{Chambolle's}
+\label{sail:ch:diff}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{sail_pd_diff}
+\caption{Primal-Dual}
+\label{sail:pd:diff}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{sail_sb_diff}
+\caption{Split-Bregman}
+\label{sail:sb:diff}
+\end{subfigure}
+\caption{Diff of each result with the noisy image, (a) shows the result of a standard Gaussian blur denoising using a width of 4.}
+\label{fig:sailboat:diff}
+\end{figure}
+
+
+
+
 \subsection{Primal-Dual Algorithm}
+
+The Primal-Dual algorithm is very fast.
+As Figure \ref{fig:timing} shows, its averaged runtime was under a second.
+It is very comparable to Split-Bregman and they only differed by a few tenths of a second.
+It would be interesting to see how they compare on some larger images, unfortunately time limitations don't allow for investigating that further right now.
+
+Primal-Dual also had very good quality results.
+As mentioned before, it is somewhat difficulat to choose a "best" quality image from those shown.
+For example Figures \ref{camera:pd},\ref{camera:pd:diff} show the result of running Primal-Dual on the camera man image.
+As you can see the denoised images looks good.
+The difference images shows that we probably coud have stopped the iterations a little sooner, as the edges seem to be smoothed more than the other algorithms.
+Perhaps using a quantitative stopping criteria could have helped in that regard.
+
+Numerically Primal-Dual was better behaved than Chambolles - it wasn't quite as hard to choose some parameters to make the algorithm work.
+
+I chose $\lambda=0.0415$.  
+The Primal-Dual paper suggested a way of estimating $\lambda$, but instead I've just used one of the values they reported, which seems to have performed fine.
+I chose the initial $\tau=0.2$, where $\tau$ and $\theta$ were updated each time step using the the following formulas:
+\begin{align*}
+\tau &= 0.2 + k*0.08
+\theta &= (0.5 + 5/(15+k))/\tau
+\end{align*}
+
+where $k$ is the iteration.
+These choices seem to perform fine on the test images used.
+
+\begin{figure}
+\centering
+\graphicspath{{images/}}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{cameraman_10}
+\caption{Noisy}
+\label{camera:noise}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{cameraman_10_ch}
+\caption{Chambolle's}
+\label{camera:ch}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{cameraman_10_pd}
+\caption{Primal-Dual}
+\label{camera:pd}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{cameraman_10_sb}
+\caption{Split-Bregman}
+\label{camera:sb}
+\end{subfigure}
+\caption{Results of each algorithm on a noisy image of a cameraman.}
+\label{fig:cameraman:dn}
+\end{figure}
+
+\begin{figure}
+\centering
+\graphicspath{{images/}}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{camera_blur_diff}
+\caption{Gaussian blur}
+\label{camera:gauss:diff}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{camera_ch_diff}
+\caption{Chambolle's}
+\label{camera:ch:diff}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{camera_pd_diff}
+\caption{Primal-Dual}
+\label{camera:pd:diff}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+\includegraphics[width=\textwidth]{camera_sb_diff}
+\caption{Split-Bregman}
+\label{camera:sb:diff}
+\end{subfigure}
+\caption{Diff of each result with the noisy image, (a) shows the result of a standard Gaussian blur denoising using a width of 4.}
+\label{fig:cameraman:diff}
+\end{figure}
+
 \subsection{Split-Bregman Algorithm}
 
-\section{Discussion}
+Split-Bregman was the fastest algorithm, again shown in Figure \cite{fig:timing}.
+As mentioned previously, this algorithm slightly outperformed Primal-Dual by a few tenths of a second.
+
+The quality of Split-Bregman is very good, which is very exciting for such a fast algorithm!
+
+Another very appealing feature Split-Bregman is it's simplicity and Numerical tolerance. 
+I chose $\mu=0.1$ without any prior information and the algorithm converged very quickly.
+It was surprising how forgiving and quick the algorithm is.
+
+It's important to note that for this project I only implemented the Anisotropic Split-Bregman.
+In the future it would be of interested ot compare the isotropic version as well.
+
+Even though this is the anistropic version, the results don't appear very different from the Primal-Dual and Chambolle's isotropic solutions.
+
+Looking at Figure \ref{slice:sb}, you can see the result of Split-Bregman on a slice of seismic sensor data.
+Looking at the data, one can see that it might be of interested to a geologist or geophysicist to see the specific horizons in the data.
+To that end the image was first histogram equalized to bring out the contrast.
+However with the constrast also emphasizes some of the discontinuities in the horizons.
+
+I was curious to see how the total variation denoising performed on the data.
+The results appear encouraging. 
+There doesn't appear to be any bad blurring across edges, and the roughness of the original equalized image appears to be smoothed out.
+A more detailed analysis shows that there are some blurring of the data, especially in regions where the lines are more unclear.
+It would be interesting to see how the algorithm performs on the volume data directly.
+
+
+\begin{figure}
+\centering
+\graphicspath{{images/}}
+\begin{subfigure}[b]{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{slice_eq}
+\caption{Equalized no denoising}
+\label{slice:noise}
+\end{subfigure}
+\begin{subfigure}[b]{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{slice_eq_ch}
+\caption{Chambolle's}
+\label{slice:ch}
+\end{subfigure}
+\begin{subfigure}[b]{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{slice_eq_pd}
+\caption{Primal-Dual}
+\label{slice:pd}
+\end{subfigure}
+\begin{subfigure}[b]{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{slice_eq_sb}
+\caption{Split-Bregman}
+\label{slice:sb}
+\end{subfigure}
+\caption{Results of each algorithm on a slice of a seismic volume from the OpendTect project \cite{opendTectWeb}. The slice has been equalized prior to smoothing to enhance appearance of horizons.}
+\label{fig:slice:dn}
+\end{figure}
+
 
 \section{Conclusion}
+
+This was a very interesting project.
+It was very enlightening to learn first hand some of the problems and strengths of the different algorithms.
+From class discussions and reading the papers, I knew that Primal-Dual was faster than Chambolle's but I didn't realize how drastic the improvement was.
+Additionally it's interesting to see how robust and fast Split-Bregman is.
+It's a shame I don't have time to pursue the topics deeper, it would have been interesting to continue comparing across different measurements, and especially to incorporate other non-linear methods like Perona-Malik and the Isotropic Split-Bregman.
+
+\begin{figure}
+\centering
+\graphicspath{{../images/}}
+\includegraphics[width=0.5\textwidth]{average_timing}
+\caption{Average time spent accross all images by algorithm.  Used visual stopping criteria.}
+\label{fig:timing}
+\end{figure}
+
+
 
 \bibliography{nonlinear_smoothing}
 
