@@ -24,14 +24,13 @@ end
 # combine non-overlapping chunks into a full image
 function deChunk(X,D,chunkSize,imageSize)
   image = zeros(imageSize)
+  ind = 1
   for r=1:chunkSize[1]:imageSize[1]
     for c=1:chunkSize[2]:imageSize[2]
-      ind = (r-1)*chunkSize[2]+c
-      if ind <= size(X,2)
-        piece = D*X[:,ind]
-        piece = reshape(piece,chunkSize)
-        image[r:min(r+chunkSize[1]-1,imageSize[1]),c:min(c+chunkSize[2]-1,imageSize[2])] = piece[1:min(chunkSize[1],imageSize[1]-r+1), 1:min(chunkSize[2],imageSize[2]-c+1)]
-      end
+      piece = D*X[:,ind]
+      piece = reshape(piece,chunkSize)
+      image[r:min(r+chunkSize[1]-1,imageSize[1]),c:min(c+chunkSize[2]-1,imageSize[2])] = piece[1:min(chunkSize[1],imageSize[1]-r+1), 1:min(chunkSize[2],imageSize[2]-c+1)]
+      ind = ind + 1
     end
   end
   image
@@ -40,16 +39,20 @@ end
 # combine non-overlapping chunks into a full image
 function deChunk(F,chunkSize,imageSize)
   image = zeros(imageSize)
+  ind = 1
   for r=1:chunkSize[1]:imageSize[1]
     for c=1:chunkSize[2]:imageSize[2]
-      ind = (r-1)*chunkSize[2]+c
-      if ind <= size(F,2)
-        piece = F[:,ind]
-        piece = reshape(piece,chunkSize)
-        image[r:min(r+chunkSize[1]-1,imageSize[1]),c:min(c+chunkSize[2]-1,imageSize[2])] = piece[1:min(chunkSize[1],imageSize[1]-r+1), 1:min(chunkSize[2],imageSize[2]-c+1)]
-      end
+      piece = F[:,ind]
+      piece = reshape(piece,chunkSize)
+      image[r:min(r+chunkSize[1]-1,imageSize[1]),c:min(c+chunkSize[2]-1,imageSize[2])] = piece[1:min(chunkSize[1],imageSize[1]-r+1), 1:min(chunkSize[2],imageSize[2]-c+1)]
+      #if r+chunkSize[1]-1 <= imageSize[1] && c+chunkSize[2]-1 <= imageSize[2]
+      #  image[r:r+chunkSize[1]-1,c:c+chunkSize[2]-1] = piece
+      #end
+      ind = ind + 1
+      #image[r,c] = 1.0
     end
   end
+  #image[355:365,490:500] = ones(11,11)*255
   image
 end
 
@@ -132,13 +135,22 @@ function testMatchingPursuit()
 end
 
 function testChunk()
+  println("testChunk()")
   sailboat = imread("../images/sailboat.png")
   sailboat = rgb2gray(sailboat)
+  imshow(sailboat,[0,255])
+  println("type: ",typeof(sailboat))
+  println("min: ",min(sailboat))
+  println("max: ",max(sailboat))
   chunkSize = (8,8)
   chunkLength = chunkSize[1] * chunkSize[2]
   f = enChunk( sailboat , chunkSize )
   r = deChunk( f, chunkSize, size(sailboat) )
-  imshow(r)
+  println("type: ",typeof(r))
+  println("min: ",min(r))
+  println("max: ",max(r))
+  imshow(r,[0,255])
+  imwrite(r,"chunk.png")
 end
 
 function testMatchingPursuitChunked()

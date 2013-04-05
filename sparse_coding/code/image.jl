@@ -525,7 +525,7 @@ function imshow(img, range)
     imwrite(img, imgout_path)
     @osx_only spawn(`open $imgout_path`)
     @linux_only begin
-        for checkcmd in (:feh, :gwenview)
+        for checkcmd in (:feh, :gwenview, :display)
             if success(`which $checkcmd` > SpawnNullStream())
                 spawn(`$checkcmd $imgout_path`)
                 break
