@@ -62,6 +62,7 @@ function kSVD(F, D, lambda, maxIters)
 
   mse = 1e5 # init to something big
   last_mse = mse
+  last_last_mse = mse
 
   for i=1:maxIters
     println("\n",i)
@@ -133,13 +134,14 @@ function kSVD(F, D, lambda, maxIters)
     end
 
     # check for convergence
+    last_last_mse = last_mse
     last_mse = mse
     mse = normfro(F-D*X)
     println()
     println("last_mse = ",last_mse)
     println("mse = ",mse)
     println("|last_mse-mse| = ",abs(mse-last_mse))
-    if abs(last_mse-mse) < 0.01
+    if abs(last_mse-mse) < 0.01 || abs(last_last_mse-mse) < 0.01
       println("kSVD converged in ",i," iterations.")
       break 
     end
