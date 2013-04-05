@@ -10,7 +10,7 @@ export matchingPursuit,orthogonalPursuit,kSVD
 #params:
 # F - original signal
 # D - sparse dictionary
-# lambda - number of elements in sparse representation
+# lambda - max number of elements in sparse representation
 #returns:
 # sparse representation
 function matchingPursuit(F, D, lambda)
@@ -19,29 +19,20 @@ function matchingPursuit(F, D, lambda)
   R = F # initial residual
 
   x = zeros(size(D,2))
+  alphas = x
+  ind = Array(Int64,0)
   for n=1:lambda
-    #print(n,",")
-    max_similarity = 0.0
-    max_i = 0.0
-    for i=1:size(D,2)
-      if x[i] == 0 # this dictionary element not already used..
-        g = D[:,i]
-        similarity = (g' * R)[1] # perfect encoding would be when g' == R/norm(R), ie they are parallel
-        if abs(similarity) > (max_similarity)
-          max_similarity = similarity
-          max_i = i
-        end
-      end
+    similarity = abs(D' * R)
+    maxVal,maxLoc = findmax(similarity)
+    ind = [ind; maxLoc[1]]
+    alphas = pinv(D[:,ind[1:n]]) * F
+    R = F - D[:,ind[1:n]]*alphas
+    if sum(R.^2) < 1e-20
+      break
     end
-    x[max_i] = max_similarity
-    #update residual:
-    R = D*x - F
   end
+  x[ind] = alphas
   x
-end # end function
-
-function orthogonalPursuit(F,D,lambda)
-  println("Not yet implemented..")
 end # end function
 
 # function kSVD(F, D, lambda)
@@ -69,6 +60,9 @@ function kSVD(F, D, lambda, maxIters)
 
   X = zeros(n,k) # sparse representation  nxk
 
+  mse = 1e5 # init to something big
+  last_mse = mse
+
   for i=1:maxIters
     println("\n",i)
     # sparse coding step:
@@ -88,23 +82,66 @@ function kSVD(F, D, lambda, maxIters)
       tmp = [X[j,ii] > 0 for ii=1:size(X,2)] # which atoms are being used  (1,k)
       w = find(tmp)
       if length(w) > 0 # only update if this atom is used
-        #for m=1:n
-        #  if m != j
-        #    E_total += D[:,m] * X[m,:]
-        #  end
-        #end
+        #println("length(w) = ",length(w))
         D_sub = [D[:,1:j-1] D[:,j+1:]]
         X_sub = [X[1:j-1,:]; X[j+1:,:]]
         E_total = D_sub * X_sub
         E_total = F - E_total
         E_restricted = E_total[:,w] # (l,nnz)
-        println("size:",size(E_restricted))
-        println("min:",min(E_restricted))
-        println("max:",max(E_restricted))
-        U,S,V = svd( E_restricted )
+        #println("type:",typeof(E_restricted))
+        #println("size:",size(E_restricted))
+        #println("min:",min(E_restricted))
+        #println("max:",max(E_restricted))
+        failed = true
+        U = Array(Float64, (size(E_restricted,1),size(E_restricted,1)) )
+        S = Array(Float64, (size(E_restricted,1),size(E_restricted,1)) )
+        V = Array(Float64, (size(E_restricted,2),size(E_restricted,2)) )
+        try
+          U,S,V = svd( E_restricted )
+          failed = false
+        catch
+          failed = true
+        end
+        if failed
+          # try it with matrix transposed
+          # (as indicated here: http://r.789695.n4.nabble.com/Observations-on-SVD-linpack-errors-and-a-workaround-td837282.html)
+          try
+            V,S,U = svd( E_restricted' )
+            #V = V'
+            #U = U'
+            failed = false
+          catch
+            failed = true
+          end
+        end
+        if failed
+          error("ERROR: svd(E) and svd(E') failed!")
+        end
+
+        try
         D[:,j] = U[:,1]  # update dictionary column
         X[j,w] = V[:,1] * S[1,1] # update non-zero elements of row of X
+        catch
+          println("size(E_restrited)=",size(E_restricted))
+          println("size(D[:,j])=",size(D[:,j]))
+          println("size(U[:,1])=",size(U[:,1]))
+          println("size(X[j,w])=",size(X[j,w]))
+          println("size(V[:,1])=",size(V[:,1]))
+          error("Failed to update")
+        end
       end
+    end
+
+    # check for convergence
+    last_mse = mse
+    mse = normfro(F-D*X)
+    println()
+    println("last_mse = ",last_mse)
+    println("mse = ",mse)
+    println("|last_mse-mse| = ",abs(mse-last_mse))
+    if abs(last_mse-mse) < 0.01
+      println("kSVD converged in ",i," iterations.")
+      break 
     end
   end
   println("\nkSVD done.")

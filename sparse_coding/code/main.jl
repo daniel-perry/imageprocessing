@@ -22,21 +22,6 @@ function enChunk(image,chunkSize)
 end
 
 # combine non-overlapping chunks into a full image
-function deChunk(X,D,chunkSize,imageSize)
-  image = zeros(imageSize)
-  ind = 1
-  for r=1:chunkSize[1]:imageSize[1]
-    for c=1:chunkSize[2]:imageSize[2]
-      piece = D*X[:,ind]
-      piece = reshape(piece,chunkSize)
-      image[r:min(r+chunkSize[1]-1,imageSize[1]),c:min(c+chunkSize[2]-1,imageSize[2])] = piece[1:min(chunkSize[1],imageSize[1]-r+1), 1:min(chunkSize[2],imageSize[2]-c+1)]
-      ind = ind + 1
-    end
-  end
-  image
-end
-
-# combine non-overlapping chunks into a full image
 function deChunk(F,chunkSize,imageSize)
   image = zeros(imageSize)
   ind = 1
@@ -45,24 +30,18 @@ function deChunk(F,chunkSize,imageSize)
       piece = F[:,ind]
       piece = reshape(piece,chunkSize)
       image[r:min(r+chunkSize[1]-1,imageSize[1]),c:min(c+chunkSize[2]-1,imageSize[2])] = piece[1:min(chunkSize[1],imageSize[1]-r+1), 1:min(chunkSize[2],imageSize[2]-c+1)]
-      #if r+chunkSize[1]-1 <= imageSize[1] && c+chunkSize[2]-1 <= imageSize[2]
-      #  image[r:r+chunkSize[1]-1,c:c+chunkSize[2]-1] = piece
-      #end
       ind = ind + 1
-      #image[r,c] = 1.0
     end
   end
-  #image[355:365,490:500] = ones(11,11)*255
   image
 end
 
-
 # create a random dictionary of dimension (atomSize,atomCount)
 # generated following procedure defined in section V of the original k-SVD paper.
-function randomDictionary(atomSize, atomCount)
-  genSize = 50
+# using a given generating matrix
+function randomDictionary(atomSize, atomCount, gen)
+  genSize = size(gen,2)
   comps = 3
-  gen = rand(atomSize,genSize)
   for i=1:genSize
     gen[:,i] = gen[:,i] * (1/norm(gen[:,i],2))
   end
@@ -80,36 +59,13 @@ function randomDictionary(atomSize, atomCount)
   d
 end
 
-function testKSVD()
-  sailboat = imread("../images/sailboat_sm.png")
-  sailboat = rgb2gray(sailboat)
-
-  println("image type:", typeof(sailboat) )
-
-  chunkSize = (8,8)
-  chunkLength = chunkSize[1] * chunkSize[2]
-
-  f = enChunk( sailboat , chunkSize )
-  d = randomDictionary( chunkLength , 1500 )
-  #a = matchingPursuit(c,d,2)
-  #x,d = kSVD(f[:,1:100],d, 20,2)
-  x,d = kSVD(f,d, 50,15)
-
-  println("max: ",max(x))
-  println("min: ",min(x))
-  println("mean: ",mean(x))
-  
-  newsb = deChunk( x,d , chunkSize, size(sailboat) )
-
-  println("out type: ", typeof(newsb))
-
-  println("max: ",max(newsb))
-  println("min: ",min(newsb))
-  println("mean: ",mean(newsb))
-
-  imwrite( newsb, "tmp.png" )
+# create a random dictionary of dimension (atomSize,atomCount)
+# generated following procedure defined in section V of the original k-SVD paper.
+function randomDictionary(atomSize, atomCount)
+  genSize = 50
+  gen = rand(atomSize,genSize)
+  randomDictionary(atomSize, atomCount, gen)
 end
-
 
 function testMatchingPursuit()
   sailboat = imread("../images/sailboat_sm.png")
@@ -138,7 +94,7 @@ function testChunk()
   println("testChunk()")
   sailboat = imread("../images/sailboat.png")
   sailboat = rgb2gray(sailboat)
-  imshow(sailboat,[0,255])
+  imshow(sailboat)
   println("type: ",typeof(sailboat))
   println("min: ",min(sailboat))
   println("max: ",max(sailboat))
@@ -149,8 +105,7 @@ function testChunk()
   println("type: ",typeof(r))
   println("min: ",min(r))
   println("max: ",max(r))
-  imshow(r,[0,255])
-  imwrite(r,"chunk.png")
+  imshow(r)
 end
 
 function testMatchingPursuitChunked()
@@ -160,20 +115,25 @@ function testMatchingPursuitChunked()
   sailboat_noisy = rgb2gray(sailboat_noisy)
   println("image size: ", size(sailboat))
 
-  chunkSize = (8,8)
+  chunkSize = (2,2)
   chunkLength = chunkSize[1] * chunkSize[2]
 
   f = enChunk( sailboat , chunkSize )
-  d = enChunk( sailboat_noisy , chunkSize )
+  #d = enChunk( sailboat_noisy , chunkSize )
+  #d = randomDictionary( chunkLength , 1500 , f ) # generate random dict from image patches
+  d = randomDictionary( chunkLength , 1500 ) # generate random dict from image patches
   for i=1:size(d,2)
     d[:,i] = d[:,i]/norm(d[:,i],2)
   end
   a = zeros(size(d,2),size(f,2))
+  cnt = 0
   for i=1:size(f,2)
     a[:,i] = matchingPursuit(f[:,i],d,2)
+    cnt = cnt + nnz(a[:,i])
   end
+  println("avg nnz: ", cnt/size(f,2))
   println("output size:",size(a))
-  r = deChunk( a,d , chunkSize, size(sailboat) )
+  r = deChunk( d*a , chunkSize, size(sailboat) )
   println("result:")
   println("size:",size(r))
   println("min:",min(r))
@@ -182,9 +142,40 @@ function testMatchingPursuitChunked()
   imshow(r)
 end
 
+function testKSVD()
+  sailboat = imread("../images/sailboat_sm.png")
+  sailboat = rgb2gray(sailboat)
+
+  println("image type:", typeof(sailboat) )
+
+  chunkSize = (2,2)
+  chunkLength = chunkSize[1] * chunkSize[2]
+
+  f = enChunk( sailboat , chunkSize )
+  d = randomDictionary( chunkLength , 1500 )
+  #d = randomDictionary( chunkLength , 1500 , f ) # generate random dict from image patches
+  #x,d = kSVD(f[:,1:100],d, 20,2)
+  x,d = kSVD(f,d, 50,100)
+
+  println("max: ",max(x))
+  println("min: ",min(x))
+  println("mean: ",mean(x))
+  
+  newsb = deChunk( d*x , chunkSize, size(sailboat) )
+
+  println("out type: ", typeof(newsb))
+
+  println("max: ",max(newsb))
+  println("min: ",min(newsb))
+  println("mean: ",mean(newsb))
+
+  imwrite( newsb, "ksvd.png" )
+  imshow(newsb)
+end
+
 function main()
+  testKSVD()
   #testMatchingPursuitChunked()
-  testChunk()
 end
 
 main() # entry point
