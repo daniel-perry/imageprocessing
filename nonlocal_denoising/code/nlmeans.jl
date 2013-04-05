@@ -21,8 +21,8 @@ function main()
 
   denoised = nlMeans( noisy, radius, searchRadius )
 
-  imwrite(denoise, out_fn)
-  imshow(denoise)
+  imwrite(denoised, out_fn)
+  imshow(denoised)
 end
 
 main() # entry point
