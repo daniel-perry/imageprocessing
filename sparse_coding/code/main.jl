@@ -2,7 +2,7 @@
 # Copyright (c) 2013 Daniel perry
 #
 
-include("image.jl") # for reading, displaying images
+include("../../common/image.jl") # for reading, displaying images
 
 using SparseDictionary
 
