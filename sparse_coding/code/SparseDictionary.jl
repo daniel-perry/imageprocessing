@@ -4,7 +4,7 @@
 
 module SparseDictionary
 
-export matchingPursuit,orthogonalPursuit,kSVD
+export matchingPursuit,orthogonalPursuit,kSVD,kSVDDenoising
 
 # function matchingPursuit(F, D, lambda)
 #params:
@@ -142,12 +142,64 @@ function kSVD(F, D, lambda, maxIters)
     println("mse = ",mse)
     println("|last_mse-mse| = ",abs(mse-last_mse))
     if abs(last_mse-mse) < 0.01 || abs(last_last_mse-mse) < 0.01
-      println("kSVD converged in ",i," iterations.")
+      println("INFO: kSVD converged in ",i," iterations.")
       break 
     end
   end
-  println("\nkSVD done.")
+  println("\nINFO: kSVD done.")
   X,D
 end # end function
+
+# chunk up an image, into overlapping patches
+function enChunk(image,patchRadius)
+  chunkSize = [1+2*patchRadius 1+2*patchRadius]
+  chunkLength = chunkSize[1] * chunkSize[2]
+  imageSize=size(image)
+  chunks = Array(Float32, (chunkLength,0) )
+  for r=patchRadius+1:imageSize[1]-patchRadius
+    for c=patchRadius+1:imageSize[2]-patchRadius
+      chunk = image[r-patchRadius:r+patchRadius,c-patchRadius:c+patchRadius]
+      chunks = [chunks chunk[:]]
+    end
+  end
+  chunks
+end
+
+# combine overlapping patches into a full image, by using the average of each patch
+function deChunk(F,patchRadius,imageSize)
+  chunkSize = [1+2*patchRadius 1+2*patchRadius]
+  image = zeros(imageSize)
+  ind = 1
+  for r=patchRadius+1:imageSize[1]-patchRadius
+    for c=patchRadius+1:imageSize[2]-patchRadius
+      chunk = F[:,ind]
+      image[r,c] = mean(chunk)
+      ind = ind + 1
+    end
+  end
+  image
+end
+
+# function kSVDDenoising(I, D, lambda)
+#params:
+# I - original noisy image
+# D - initial sparse dictionary 
+# lambda - number of elements in sparse representation
+# maxIters - maximum iterations
+# patchRadius - radius of patches for denoising
+#returns:
+# (DI, D)
+# DI - denoised image
+# D - resuling sparse dictionary 
+function kSVDDenoising(I, D, lambda, maxIters, patchRadius)
+  println("INFO: chunking image into patches")
+  F = enChunk( I, patchRadius )
+  println("INFO: running kSVD")
+  X,D = kSVD( F, D, lambda, maxIters )
+  println("INFO: rebuilding image from patch means")
+  DI = deChunk( D*X, patchRadius, size(I) )
+  DI,D
+end # end function
+
 
 end # end module

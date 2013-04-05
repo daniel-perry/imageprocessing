@@ -174,8 +174,31 @@ function testKSVD()
 end
 
 function main()
-  testKSVD()
+  #testMatchingPursuit()
+  #testKSVD()
   #testMatchingPursuitChunked()
+  #return
+
+  if length(ARGS) == 0
+    println("usage: scriptname <noisy-image> <output-image> <patch-radius> <max-nnz>")
+    return
+  end
+  noisy_fn = ARGS[1]
+  out_fn = ARGS[2]
+  radius = parse_int(ARGS[3])
+  max_nnz = parse_int(ARGS[4])
+
+  noisy = imread(noisy_fn)
+  noisy = rgb2gray(noisy)
+
+  println("INFO: building initial dictionary")
+  D = randomDictionary( (1+2*radius)^2 , 1500 )
+  println("INFO: done building initial dictionary")
+
+  denoised = kSVDDenoising( noisy, D, max_nnz, 50, radius )
+
+  imwrite(denoise, out_fn)
+  imshow(denoise)
 end
 
 main() # entry point
