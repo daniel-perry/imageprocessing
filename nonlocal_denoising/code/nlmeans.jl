@@ -19,9 +19,10 @@ function main()
   noisy = imread(noisy_fn)
   noisy = rgb2gray(noisy)
 
-  sigma = 10 # noise model?
+  sigma = 0.1 # should approximate the noise model
+  kernelSigma = 1
 
-  denoised = nlMeans( noisy, radius, searchRadius, 10*sigma )
+  denoised = nlMeans( noisy, radius, searchRadius, sigma, kernelSigma )
 
   imwrite(denoised, out_fn)
   #imshow(denoised)
