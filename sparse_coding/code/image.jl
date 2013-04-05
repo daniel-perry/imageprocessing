@@ -515,7 +515,7 @@ function imwrite(I, file::String)
 end
 
 function imshow(img, range)
-    if ndims(img) == 2 
+    if ndims(img) == 2 && length(range) == 2
         # only makes sense for gray scale images
         img = imadjustintensity(img, range)
     end

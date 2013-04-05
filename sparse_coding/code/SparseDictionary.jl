@@ -26,7 +26,7 @@ function matchingPursuit(F, D, lambda)
     for i=1:size(D,2)
       if x[i] == 0 # this dictionary element not already used..
         g = D[:,i]
-        similarity = (g' * R)[1]
+        similarity = (g' * R)[1] # perfect encoding would be when g' == R/norm(R), ie they are parallel
         if abs(similarity) > (max_similarity)
           max_similarity = similarity
           max_i = i
@@ -88,14 +88,19 @@ function kSVD(F, D, lambda, maxIters)
       tmp = [X[j,ii] > 0 for ii=1:size(X,2)] # which atoms are being used  (1,k)
       w = find(tmp)
       if length(w) > 0 # only update if this atom is used
-        E_total = zeros(l,k)
-        for m=1:n
-          if m != j
-            E_total += D[:,m] * X[m,:]
-          end
-        end
+        #for m=1:n
+        #  if m != j
+        #    E_total += D[:,m] * X[m,:]
+        #  end
+        #end
+        D_sub = [D[:,1:j-1] D[:,j+1:]]
+        X_sub = [X[1:j-1,:]; X[j+1:,:]]
+        E_total = D_sub * X_sub
         E_total = F - E_total
         E_restricted = E_total[:,w] # (l,nnz)
+        println("size:",size(E_restricted))
+        println("min:",min(E_restricted))
+        println("max:",max(E_restricted))
         U,S,V = svd( E_restricted )
         D[:,j] = U[:,1]  # update dictionary column
         X[j,w] = V[:,1] * S[1,1] # update non-zero elements of row of X
