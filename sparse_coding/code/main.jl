@@ -5,6 +5,7 @@
 include("../../common/image.jl") # for reading, displaying images
 
 using SparseDictionary
+using MAT
 
 # chunk up an image, into non-overlapping chunks
 function enChunk(image,chunkSize)
@@ -173,32 +174,42 @@ function testKSVD()
   imshow(newsb)
 end
 
-function main()
+function main(args)
   #testMatchingPursuit()
   #testKSVD()
   #testMatchingPursuitChunked()
   #return
 
-  if length(ARGS) == 0
+  if length(args) == 0
     println("usage: scriptname <noisy-image> <output-image> <patch-radius> <max-nnz>")
     return
   end
-  noisy_fn = ARGS[1]
-  out_fn = ARGS[2]
-  radius = parse_int(ARGS[3])
-  max_nnz = parse_int(ARGS[4])
+  noisy_fn = args[1]
+  out_fn = args[2]
+  radius = parse_int(args[3])
+  max_nnz = parse_int(args[4])
 
   noisy = imread(noisy_fn)
   noisy = rgb2gray(noisy)
 
   println("INFO: building initial dictionary")
-  D = randomDictionary( (1+2*radius)^2 , 1500 )
+  D = randomDictionary( (1+2*radius)^2 , 500 )
   println("INFO: done building initial dictionary")
 
-  denoised = kSVDDenoising( noisy, D, max_nnz, 50, radius )
+  parts = split(noisy_fn,"/")
+  noisy_fn = parts[length(parts)]
+  noisy_fn = replace(noisy_fn, ".", "_")
+  noisy_fn = string(noisy_fn , "_" , radius)
 
-  imwrite(denoise, out_fn)
+  denoised,D = kSVDDenoising( noisy_fn, noisy, D, max_nnz, 25, radius )
+
+  mfile = matopen(string(out_fn,".mat"),"w")
+  write(mfile, "denoised",denoised)
+  write(mfile, "dictionary",D)
+  close(mfile)
+
+  imwrite(denoised, out_fn)
   imshow(denoise)
 end
 
-main() # entry point
+main(ARGS) # entry point

@@ -27,7 +27,6 @@
 
 \section{Introduction}
 One of the classic problems in image analysis is image denoising.
-
 Some of the landmark approaches to image denoising include \cite{perona1990scale} and \cite{rudin1992nonlinear}.
 Each of these model the denoising problem using partial differential equations, as anisotropic diffusion in the first and total variation over the image in the second. 
 
@@ -56,6 +55,7 @@ Z(i) = \sum_k \exp( -||v(N_i)-v(N_k)||_2^2 / h^2 )
 \end{equation*}
 
 
+
 Here I evaluate two algorithms that denoise by "learning" the distribution of the image:
 \begin{enumerate}
 \item NL-means
@@ -64,7 +64,7 @@ Here I evaluate two algorithms that denoise by "learning" the distribution of th
 
 \section{Methods}
 Here we briefly describe the specific motivation for each algorithm, how they work in theory, and the specific engineering decisions used in the implementations.
-\subsection{Total Variation Minimization}
+\subsection{NL-means}
 Here we motivate and describe the method of total variation.
 As briefly described above varation can be described like so:
 \begin{equation*}

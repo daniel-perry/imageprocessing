@@ -6,6 +6,8 @@ module SparseDictionary
 
 export matchingPursuit,orthogonalPursuit,kSVD,kSVDDenoising
 
+using MAT
+
 # function matchingPursuit(F, D, lambda)
 #params:
 # F - original signal
@@ -24,7 +26,17 @@ function matchingPursuit(F, D, lambda)
   for n=1:lambda
     similarity = abs(D' * R)
     maxVal,maxLoc = findmax(similarity)
-    ind = [ind; maxLoc[1]]
+    try
+      ind = [ind, maxLoc[1]]
+    catch
+      # try doing it a different way:
+      tmp = zeros(Int64,length(ind)+1)
+      for i=1:length(ind)
+        tmp[i] = ind[i]
+      end
+      tmp[length(tmp)] = maxLoc[1]
+      ind = tmp
+    end
     alphas = pinv(D[:,ind[1:n]]) * F
     R = F - D[:,ind[1:n]]*alphas
     if sum(R.^2) < 1e-20
@@ -83,20 +95,15 @@ function kSVD(F, D, lambda, maxIters)
       tmp = [X[j,ii] > 0 for ii=1:size(X,2)] # which atoms are being used  (1,k)
       w = find(tmp)
       if length(w) > 0 # only update if this atom is used
-        #println("length(w) = ",length(w))
         D_sub = [D[:,1:j-1] D[:,j+1:]]
         X_sub = [X[1:j-1,:]; X[j+1:,:]]
         E_total = D_sub * X_sub
         E_total = F - E_total
         E_restricted = E_total[:,w] # (l,nnz)
-        #println("type:",typeof(E_restricted))
-        #println("size:",size(E_restricted))
-        #println("min:",min(E_restricted))
-        #println("max:",max(E_restricted))
         failed = true
-        U = Array(Float64, (size(E_restricted,1),size(E_restricted,1)) )
-        S = Array(Float64, (size(E_restricted,1),size(E_restricted,1)) )
-        V = Array(Float64, (size(E_restricted,2),size(E_restricted,2)) )
+        U = Array(Float64, (1,1)) #(size(E_restricted,1),size(E_restricted,1)) )
+        S = Array(Float64, (1,1)) #(size(E_restricted,1),size(E_restricted,1)) )
+        V = Array(Float64, (1,1)) #(size(E_restricted,2),size(E_restricted,2)) )
         try
           U,S,V = svd( E_restricted )
           failed = false
@@ -123,7 +130,7 @@ function kSVD(F, D, lambda, maxIters)
         D[:,j] = U[:,1]  # update dictionary column
         X[j,w] = V[:,1] * S[1,1] # update non-zero elements of row of X
         catch
-          println("size(E_restrited)=",size(E_restricted))
+          println("size(E_restricted)=",size(E_restricted))
           println("size(D[:,j])=",size(D[:,j]))
           println("size(U[:,1])=",size(U[:,1]))
           println("size(X[j,w])=",size(X[j,w]))
@@ -180,8 +187,33 @@ function deChunk(F,patchRadius,imageSize)
   image
 end
 
+function loadCache()
+  cache = Dict{String,Array{Float64,2}}()
+  if isfile("chunkcache.mat")
+    file = matopen("chunkcache.mat")
+    #cachekeys = read(file,"cachekeys")
+    #cachevals = read(file,"cachevals")
+    cache = read(file,"cache")
+    close(file)
+    #for k,v in zip(cachekeys,cachevals)
+    #  cache[k] = v
+    #end
+  end
+  cache
+end
+function saveCache(cache)
+  file = matopen("chunkcache.mat","w")
+  #cachekeys = keys(cache)
+  #cachevals = values(cache)
+  #write(file,"cachekeys",cachekeys)
+  #write(file,"cachevals",cachevals)
+  write(file,"cache",cache)
+  close(file)
+end
+
 # function kSVDDenoising(I, D, lambda)
 #params:
+# filename - filename
 # I - original noisy image
 # D - initial sparse dictionary 
 # lambda - number of elements in sparse representation
@@ -191,11 +223,22 @@ end
 # (DI, D)
 # DI - denoised image
 # D - resuling sparse dictionary 
-function kSVDDenoising(I, D, lambda, maxIters, patchRadius)
+function kSVDDenoising(filename, I, D, lambda, maxIters, patchRadius)
   println("INFO: chunking image into patches")
-  F = enChunk( I, patchRadius )
+  cache = loadCache()
+  F = zeros(Float64, (1,1))
+  if has(cache,filename)
+    println("loading patches from cache...")
+    F = cache[filename]
+  else
+    F = enChunk( I, patchRadius )
+    cache[filename] = F
+    saveCache(cache)
+  end
+
   println("INFO: running kSVD")
   X,D = kSVD( F, D, lambda, maxIters )
+
   println("INFO: rebuilding image from patch means")
   DI = deChunk( D*X, patchRadius, size(I) )
   DI,D
