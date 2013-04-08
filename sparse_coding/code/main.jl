@@ -209,7 +209,7 @@ function main(args)
   close(mfile)
 
   imwrite(denoised, out_fn)
-  imshow(denoise)
+  #imshow(denoised)
 end
 
 main(ARGS) # entry point
