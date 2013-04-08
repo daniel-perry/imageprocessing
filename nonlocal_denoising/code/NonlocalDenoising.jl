@@ -41,12 +41,12 @@ function nlMeans(I,patchRadius,searchRadius, support, sigma)
       patch = I[r-patchRadius:r+patchRadius,c-patchRadius:c+patchRadius]
       center = patch[patchRadius+1,patchRadius+1]
       patch = patch[:] .* kernel
-      searchCorner = [max(patchRadius+1,min(size(I,1)-patchRadius,r-searchSide+1)), max(patchRadius+1,min(size(I,1)-patchRadius,c-searchSide+1))]
+      searchCorner = [max(patchRadius+1,min(size(I,1)-patchRadius,r-searchRadius)), max(patchRadius+1,min(size(I,2)-patchRadius,c-searchRadius))]
       if r > size(I,1)-searchSide
-        searchCorner[1] = min(size(I,1)-patchRadius-searchSide,r-searchSide)
+        searchCorner[1] = min(size(I,1)-patchRadius-searchSide,r-searchRadius)
       end
       if c > size(I,2)-searchSide
-        searchCorner[2] = min(size(I,2)-patchRadius-searchRadius,c-searchSide)
+        searchCorner[2] = min(size(I,2)-patchRadius-searchSide,c-searchRadius)
       end
       weights = 0.0
       pixels = 0.0
