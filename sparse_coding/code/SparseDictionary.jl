@@ -15,7 +15,7 @@ using MAT
 # lambda - max number of elements in sparse representation
 #returns:
 # sparse representation
-function matchingPursuit(F, D, lambda)
+function matchingPursuit(F, D, lambda, epsilon)
 
   F = F[:]
   R = F # initial residual
@@ -39,7 +39,7 @@ function matchingPursuit(F, D, lambda)
     end
     alphas = pinv(D[:,ind[1:n]]) * F
     R = F - D[:,ind[1:n]]*alphas
-    if sum(R.^2) < 1e-20
+    if sum(R.^2) < epsilon #(1.15*10)^2 #1e-20 # (c*sigma)^2
       break
     end
   end
@@ -57,7 +57,7 @@ end # end function
 # (X, D)
 # X - sparse representation, X = [ X_1 X_2 ... X_k ], X_i \in R^n    (n,k)
 # D - sparse dictionary                                              (l,n)
-function kSVD(F, D, lambda, maxIters)
+function kSVD(F, D, lambda, maxIters, epsilon)
   # make sure columns of D or normalized using L2 norm:
   for i=1:size(D,2)
     D[:,i] = D[:,i] / norm(D[:,i],2)
@@ -84,7 +84,7 @@ function kSVD(F, D, lambda, maxIters)
       if j%100 == 0
         print(".") # progress...
       end
-      X[:,j] = matchingPursuit(F[:,j],D,lambda)
+      X[:,j] = matchingPursuit(F[:,j],D,lambda,epsilon)
     end
     # codebook update step:
     println("\ncodebook update step")
@@ -173,14 +173,17 @@ function enChunk(image,patchRadius)
 end
 
 # combine overlapping patches into a full image, by using the average of each patch
-function deChunk(F,patchRadius,imageSize)
+function deChunk(Original,F,patchRadius, lambda)
+  imageSize = size(Original)
   chunkSize = [1+2*patchRadius 1+2*patchRadius]
   image = zeros(imageSize)
   ind = 1
   for r=patchRadius+1:imageSize[1]-patchRadius
     for c=patchRadius+1:imageSize[2]-patchRadius
       chunk = F[:,ind]
-      image[r,c] = mean(chunk)
+      #image[r,c] = (lambda*Original[r,c] + sum(chunk)) / (lambda + length(chunk))
+      #image[r,c] = (Original[r,c] + lambda * sum(chunk)) / ( 1 + lambda * length(chunk))
+      image[r,c] = ((1-lambda)*Original[r,c] + lambda * sum(chunk)) / ( (1-lambda) + lambda * length(chunk))
       ind = ind + 1
     end
   end
@@ -211,19 +214,20 @@ function saveCache(cache)
   close(file)
 end
 
-# function kSVDDenoising(I, D, lambda)
+#function kSVDDenoising(filename, I, D, sparsity, maxIters, patchRadius)
 #params:
 # filename - filename
 # I - original noisy image
 # D - initial sparse dictionary 
-# lambda - number of elements in sparse representation
+# sparsity - number of elements in sparse representation
 # maxIters - maximum iterations
 # patchRadius - radius of patches for denoising
+# relaxation - coefficient of the original contribution
 #returns:
 # (DI, D)
 # DI - denoised image
 # D - resuling sparse dictionary 
-function kSVDDenoising(filename, I, D, lambda, maxIters, patchRadius)
+function kSVDDenoising(filename, I, D, sparsity, maxIters, patchRadius, relaxation, useKSVDFlag)
   println("INFO: chunking image into patches")
   cache = loadCache()
   F = zeros(Float64, (1,1))
@@ -236,11 +240,27 @@ function kSVDDenoising(filename, I, D, lambda, maxIters, patchRadius)
     saveCache(cache)
   end
 
-  println("INFO: running kSVD")
-  X,D = kSVD( F, D, lambda, maxIters )
+  n = size(D,2) # number of dictionary atoms
+  k = size(F,2) # number of signals 
+  X = zeros(n,k) # sparse representation  nxk
+  if(useKSVDFlag)
+    println("INFO: running kSVD")
+    #epsilon = 1
+    epsilon = 1e-4
+    X,D = kSVD( F, D, sparsity, maxIters, epsilon )
+  else
+    println("INFO: using given Dictionary, no kSVD")
+    epsilon = 1e-4
+    for j=1:k # each column of X,F
+      if j%100 == 0
+        print(".") # progress...
+      end
+      X[:,j] = matchingPursuit(F[:,j],D,sparsity,epsilon)
+    end
+  end
 
   println("INFO: rebuilding image from patch means")
-  DI = deChunk( D*X, patchRadius, size(I) )
+  DI = deChunk( I, D*X, patchRadius, relaxation )
   DI,D
 end # end function
 

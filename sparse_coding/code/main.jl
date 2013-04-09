@@ -37,37 +37,6 @@ function deChunk(F,chunkSize,imageSize)
   image
 end
 
-# create a random dictionary of dimension (atomSize,atomCount)
-# generated following procedure defined in section V of the original k-SVD paper.
-# using a given generating matrix
-function randomDictionary(atomSize, atomCount, gen)
-  genSize = size(gen,2)
-  comps = 3
-  for i=1:genSize
-    gen[:,i] = gen[:,i] * (1/norm(gen[:,i],2))
-  end
-  d = zeros(atomSize,atomCount)
-  for i=1:atomCount
-    coeff = rand(comps)'
-    coeff = coeff / sum(coeff)  # random coefficients should sum to 1..
-    loc = rand(Uint32, comps)
-    loc = mod(loc,genSize) + ones(Uint32,comps) # random locations in the generating dictionary
-    parts = gen[:,loc]
-    coeff = ones(comps,1)*coeff
-    atom = sum( parts*coeff, 2 )
-    d[:,i] = atom
-  end
-  d
-end
-
-# create a random dictionary of dimension (atomSize,atomCount)
-# generated following procedure defined in section V of the original k-SVD paper.
-function randomDictionary(atomSize, atomCount)
-  genSize = 50
-  gen = rand(atomSize,genSize)
-  randomDictionary(atomSize, atomCount, gen)
-end
-
 function testMatchingPursuit()
   sailboat = imread("../images/sailboat_sm.png")
   sailboat = rgb2gray(sailboat)
@@ -174,6 +143,54 @@ function testKSVD()
   imshow(newsb)
 end
 
+# create a random dictionary of dimension (atomSize,atomCount)
+# generated following procedure defined in section V of the original k-SVD paper.
+# using a given generating matrix
+function randomDictionary(atomSize, atomCount, gen)
+  genSize = size(gen,2)
+  comps = 3
+  for i=1:genSize
+    gen[:,i] = gen[:,i] * (1/norm(gen[:,i],2))
+  end
+  d = zeros(atomSize,atomCount)
+  for i=1:atomCount
+    coeff = rand(comps)'
+    coeff = coeff / sum(coeff)  # random coefficients should sum to 1..
+    loc = rand(Uint32, comps)
+    loc = mod(loc,genSize) + ones(Uint32,comps) # random locations in the generating dictionary
+    parts = gen[:,loc]
+    coeff = ones(comps,1)*coeff
+    atom = sum( parts*coeff, 2 )
+    d[:,i] = atom
+  end
+  d
+end
+
+# create a random dictionary of dimension (atomSize,atomCount)
+# generated following procedure defined in section V of the original k-SVD paper.
+function randomDictionary(atomSize, atomCount)
+  genSize = 50
+  gen = rand(atomSize,genSize)
+  randomDictionary(atomSize, atomCount, gen)
+end
+
+# Create an initial dictionary from the DCT frame
+# adapted from matlab implementation availabe here:
+# http://www.cs.technion.ac.il/~elad/software/
+function dctDictionary(atomSize, atomCount)
+  Pn = convert(Uint64,ceil(sqrt(atomCount)))
+  bb = convert(Uint64,ceil(sqrt(atomSize)))
+  DCT=zeros(bb,Pn)
+  for k=0:1:Pn-1
+      V=cos([i::Float64 for i=0.0:bb-1]'*k*pi/Pn)
+      if k>0
+        V=V-mean(V)
+      end
+      DCT[:,k+1]=V/norm(V)
+  end
+  DCT=kron(DCT,DCT)
+end
+
 function main(args)
   #testMatchingPursuit()
   #testKSVD()
@@ -193,7 +210,8 @@ function main(args)
   noisy = rgb2gray(noisy)
 
   println("INFO: building initial dictionary")
-  D = randomDictionary( (1+2*radius)^2 , 500 )
+  #D = randomDictionary( (1+2*radius)^2 , 256 )
+  D = dctDictionary( (1+2*radius)^2 , 256 )
   println("INFO: done building initial dictionary")
 
   parts = split(noisy_fn,"/")
@@ -201,7 +219,18 @@ function main(args)
   noisy_fn = replace(noisy_fn, ".", "_")
   noisy_fn = string(noisy_fn , "_" , radius)
 
-  denoised,D = kSVDDenoising( noisy_fn, noisy, D, max_nnz, 25, radius )
+  maxIters = 10
+  noise_sigma = 10
+  #relaxation = 0.00034 * noise_sigma
+  #relaxation = 0.005 * noise_sigma # sailboat
+  relaxation = 0.01 * noise_sigma # camera
+
+  println("INFO: dictionary size:",size(D))
+  println("INFO: sparsity:",max_nnz)
+  println("INFO: relaxation:",relaxation)
+
+  useKSVD = true
+  denoised,D = kSVDDenoising( noisy_fn, noisy, D, max_nnz, maxIters, radius, relaxation, useKSVD )
 
   mfile = matopen(string(out_fn,".mat"),"w")
   write(mfile, "denoised",denoised)
