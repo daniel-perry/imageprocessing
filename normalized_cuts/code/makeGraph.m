@@ -10,7 +10,17 @@ function [W,D] = makeGraph(im, r)
 
 sigma = r/3;
 
-F = im(:);
+F = double(im(:));
+if length(size(im)) > 2 % color
+  im = rgb2hsv(im);
+  F = double(reshape(F, size(im,1)*size(im,2), 3));
+  tmp = F;
+  % compute color feature used in paper:
+  F(:,1) = tmp(:,3); % v
+  F(:,2) = tmp(:,3) .* tmp(:,2) .* sin(tmp(:,1)); % v * s * sin(h)
+  F(:,3) = tmp(:,3) .* tmp(:,2) .* cos(tmp(:,1)); % v * s * cos(h)
+end
+flen = size(F,1);
 
 %tmp = ones(size(F))';
 %Fdiff = F * tmp - tmp' * F';
@@ -28,16 +38,14 @@ y = tmp' * y;
 loc = zeros(size(im,1),size(im,2),2);
 loc(:,:,1) = x;
 loc(:,:,2) = y;
-xy = reshape(loc, length(F), 2);
+xy = reshape(loc, flen, 2);
 
-%loc2 = zeros(length(F),length(F));
 tic;
-W = sparse(length(F),length(F)); 
+W = sparse(flen,flen); 
+%arrayfun(@buildSparse, 1:flen );
 
-%arrayfun(@buildSparse, 1:length(F) );
-
-for i=1:length(F)
-  for j=i:length(F) % symmetric
+for i=1:flen
+  for j=i:flen % symmetric
     difference = xy(i,:)-xy(j,:);
     distance = norm(difference);
     if distance <= r
@@ -47,7 +55,7 @@ for i=1:length(F)
     end
   end
   if mod(i,100) == 0 % poor man's progress bar..
-    progress = 100 * (i/length(F))
+    progress = 100 * (i/flen)
   end
 end
 
@@ -75,8 +83,8 @@ end %function
 function buildSparse(ind)
   global F;
   global xy;
-  is = ind*ones(length(F)-(ind-1),1); % index repeated 
-  js = (ind:length(F))'; % subloop indices
+  is = ind*ones(flen-(ind-1),1); % index repeated 
+  js = (ind:flen)'; % subloop indices
   arrayfun( @buildSparse2, is, js);
 end % function
 
