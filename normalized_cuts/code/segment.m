@@ -11,3 +11,4 @@ function [S] = segment(imsize,evec)
 thold = median(evec)
 S = evec > thold;
 S = reshape(S, imsize);
+

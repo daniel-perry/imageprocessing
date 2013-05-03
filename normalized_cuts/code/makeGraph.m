@@ -11,8 +11,8 @@ function [W,D] = makeGraph(im, r)
 sigma = r/3;
 
 F = im(:);
-%tmp = ones(size(F))';
 
+%tmp = ones(size(F))';
 %Fdiff = F * tmp - tmp' * F';
 %Fdiff = Fdiff .* Fdiff;
 %W = exp( - Fdiff / sigma );
@@ -25,17 +25,20 @@ x = x' * tmp;
 tmp = ones(1,size(im,1));
 y = tmp' * y;
 
-dist = zeros(size(im,1),size(im,2),2);
-dist(:,:,1) = x;
-dist(:,:,2) = y;
-dist = reshape(dist, length(F), 2);
+loc = zeros(size(im,1),size(im,2),2);
+loc(:,:,1) = x;
+loc(:,:,2) = y;
+xy = reshape(loc, length(F), 2);
 
-%dist2 = zeros(length(F),length(F));
+%loc2 = zeros(length(F),length(F));
 tic;
 W = sparse(length(F),length(F)); 
+
+%arrayfun(@buildSparse, 1:length(F) );
+
 for i=1:length(F)
   for j=i:length(F) % symmetric
-    difference = dist(i,:)-dist(j,:);
+    difference = xy(i,:)-xy(j,:);
     distance = norm(difference);
     if distance <= r
       Fdiff = F(i)-F(j);
@@ -47,6 +50,7 @@ for i=1:length(F)
     progress = 100 * (i/length(F))
   end
 end
+
 toc
 
 %dist = exp(-(dist2)/sigma) .* (dist2<=r);
@@ -62,4 +66,33 @@ for i=1:size(D,1)
   D(i,i) = d(i);
   W(i,i) = W(i,i)/2; % fix diagonal (from added transpose)
 end
+
+end %function
+
+
+% for building the sparse matrix - but turns out arrayfun() is slower than for loops..
+%function [xi,yi,w] = buildSparse(ind)
+function buildSparse(ind)
+  global F;
+  global xy;
+  is = ind*ones(length(F)-(ind-1),1); % index repeated 
+  js = (ind:length(F))'; % subloop indices
+  arrayfun( @buildSparse2, is, js);
+end % function
+
+%function [xi,yi,w] = buildSparse2(i,j)
+function buildSparse2(i,j)
+  global F;
+  global xy;
+  global W;
+  global radius;
+  sigma = radius/3;
+  difference = xy(i,:)-xy(j,:);
+  distance = norm(difference);
+  if distance <= radius
+    Fdiff = F(i)-F(j);
+    Fdiff = Fdiff' * Fdiff; % 2-norm squared
+    W(i,j) = exp(-(distance+Fdiff)/sigma);
+  end
+end % function
 
