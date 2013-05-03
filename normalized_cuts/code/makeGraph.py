@@ -13,15 +13,19 @@ def makeGraph(im, r):
   '''
   sigma = r/3.0
   F = im.flatten()
-  x = arange(0,im.shape[0])
-  y = arange(0,im.shape[1])
+  x = matrix(arange(0,im.shape[0]))
+  tmp = ones((1,im.shape[1]))
+  x = transpose(x) * tmp
+  y = matrix(arange(0,im.shape[1]))
+  tmp = ones((1,im.shape[0]))
+  y = transpose(tmp) * y 
   loc = zeros([im.shape[0],im.shape[1],2])
-  loc[:,:,1] = x
-  loc[:,:,2] = y
-  xy = loc.reshape(len(F),1)
+  loc[:,:,0] = x
+  loc[:,:,1] = y
+  xy = loc.reshape(len(F),2)
   W = lil_matrix((len(F),len(F)))
 
-  for i in range(1,len(F)):
+  for i in range(0,len(F)):
     for j in range(i,len(F)):
       difference = xy[i,:] - xy[j,:]
       distance = linalg.norm(difference)
